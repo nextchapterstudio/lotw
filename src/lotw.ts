@@ -3,28 +3,14 @@ import type { ChainInfo, LotwConnector } from './types'
 
 import { interpret } from 'xstate'
 
-import { LotwError } from './lotw-error'
 import { makeWalletMachine } from './wallet.machine'
 
 export class Lotw<Id extends string> {
-  private static _instance: Lotw<string> | null = null
   private _walletActor: InterpreterFrom<
     ReturnType<typeof makeWalletMachine<Id>>
   >
 
   constructor(connectors: LotwConnector<Id>[], _options?: {}) {
-    if (Lotw._instance) {
-      throw new LotwError({
-        code: 'MULTIPLE_INSTANTIATIONS',
-        message:
-          'You can only have one instance of Lotw, but you tried to instantiate a second one!',
-      })
-    }
-
-    // Set the current instance so we can check it later
-    // Cast to any because we don't actually need the type, just the value
-    Lotw._instance = this as any
-
     this._walletActor = interpret(makeWalletMachine(connectors)).start()
   }
 
