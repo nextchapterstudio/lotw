@@ -1,5 +1,5 @@
 import type {
-  ConnectorOptions,
+  LotwConnectorOptions,
   InjectedProvider,
   InjectedWalletProvider,
 } from '../types'
@@ -18,7 +18,7 @@ const COINBASE_CONNECTOR_ID = 'Coinbase'
 export class CoinbaseConnector extends BaseInjectedConnector<
   typeof COINBASE_CONNECTOR_ID
 > {
-  constructor(options?: ConnectorOptions) {
+  constructor(options?: LotwConnectorOptions) {
     super(COINBASE_CONNECTOR_ID, options)
   }
 

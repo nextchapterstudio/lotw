@@ -49,7 +49,7 @@ export interface LotwConnector<Id extends string> {
   on(event: 'chainChanged', callback: (chainId: string) => void): void
 }
 
-export type ConnectorOptions = {
+export type LotwConnectorOptions = {
   /**
    * One of:
    * - Chain id as hex (`'0x1'`)

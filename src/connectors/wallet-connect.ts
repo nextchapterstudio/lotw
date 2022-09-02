@@ -1,6 +1,6 @@
 import type {
   ChainInfo,
-  ConnectorOptions,
+  LotwConnectorOptions,
   ConnectionData,
   LotwConnector,
 } from '../types'
@@ -10,7 +10,7 @@ import WalletConnectProvider from '@walletconnect/web3-provider'
 
 import { Web3Provider, chainIdFromChainInfo } from '../helpers'
 
-type WalletConnectOptions = IWalletConnectProviderOptions & ConnectorOptions
+type WalletConnectOptions = IWalletConnectProviderOptions & LotwConnectorOptions
 
 export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
   options: WalletConnectOptions

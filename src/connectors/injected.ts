@@ -1,7 +1,7 @@
 import type {
   ChainInfo,
   ConnectionData,
-  ConnectorOptions,
+  LotwConnectorOptions,
   InjectedWalletProvider,
   LotwConnector,
 } from '../types'
@@ -15,7 +15,7 @@ export class BaseInjectedConnector<Id extends string>
   provider: Web3Provider | null = null
   _id: Id
 
-  constructor(id: Id, options?: ConnectorOptions) {
+  constructor(id: Id, options?: LotwConnectorOptions) {
     this._id = id
     this.chainInfo = options?.chainInfo
   }
@@ -106,7 +106,7 @@ const INJECTED_CONNECTOR_ID = 'Injected'
 export class InjectedConnector extends BaseInjectedConnector<
   typeof INJECTED_CONNECTOR_ID
 > {
-  constructor(options?: ConnectorOptions) {
+  constructor(options?: LotwConnectorOptions) {
     super(INJECTED_CONNECTOR_ID, options)
   }
 }

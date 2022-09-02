@@ -1,7 +1,7 @@
 import type {
   InjectedProvider,
   InjectedWalletProvider,
-  ConnectorOptions,
+  LotwConnectorOptions,
 } from '../types'
 
 import { BaseInjectedConnector } from './injected'
@@ -23,7 +23,7 @@ const METAMASK_CONNECTOR_ID = 'MetaMask'
 export class MetaMaskConnector extends BaseInjectedConnector<
   typeof METAMASK_CONNECTOR_ID
 > {
-  constructor(options?: ConnectorOptions) {
+  constructor(options?: LotwConnectorOptions) {
     super(METAMASK_CONNECTOR_ID, options)
   }
 
