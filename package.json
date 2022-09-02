@@ -27,7 +27,7 @@
     "postinstall": "yarn xstate:typegen",
     "build": "yarn xstate:typegen && tsup",
     "format": "prettier --write \"src/**/*.ts\"",
-    "xstate:typegen": "xstate typegen \"./src/**/*.ts?(x)\""
+    "xstate:typegen": "xstate typegen \"./src/**/*.ts\""
   },
   "peerDependencies": {
     "@walletconnect/web3-provider": "^1.8.0",
@@ -46,5 +46,8 @@
     "tsup": "^6.2.3",
     "typescript": "^4.8.2",
     "xstate": "^4.30.0"
+  },
+  "dependencies": {
+    "tiny-emitter": "^2.1.0"
   }
 }

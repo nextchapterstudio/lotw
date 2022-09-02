@@ -49,8 +49,6 @@ export interface LotwConnector<Id extends string> {
   on(event: 'chainChanged', callback: (chainId: string) => void): void
 }
 
-export type ConnectorConfig<Id extends string> = LotwConnector<Id>
-
 export type ConnectorOptions = {
   /**
    * One of:
