@@ -6,8 +6,19 @@
   "types": "lib/index.d.ts",
   "sideEffect": false,
   "files": [
-    "lib/**/*"
+    "/lib"
   ],
+  "exports": {
+    ".": {
+      "module": "./lib/index.mjs",
+      "default": "./lib/index.js"
+    },
+    "./react": {
+      "module": "./lib/react.mjs",
+      "default": "./lib/react.js",
+      "types": "./lib/react.d.ts"
+    }
+  },
   "keywords": [
     "web3",
     "web3 wallet",
@@ -29,11 +40,19 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "xstate:typegen": "xstate typegen \"./src/**/*.ts\""
   },
+  "dependencies": {
+    "tiny-emitter": "^2.1.0"
+  },
   "peerDependencies": {
     "@walletconnect/web3-provider": "^1.8.0",
     "@xstate/react": "^3.0.0",
     "ethers": "^5.0.0",
     "xstate": "^4.30.0"
+  },
+  "peerDependenciesMeta": {
+    "@walletconnect/web3-provider": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^18.7.14",
@@ -46,8 +65,5 @@
     "tsup": "^6.2.3",
     "typescript": "^4.8.2",
     "xstate": "^4.30.0"
-  },
-  "dependencies": {
-    "tiny-emitter": "^2.1.0"
   }
 }
