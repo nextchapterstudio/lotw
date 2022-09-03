@@ -7,5 +7,3 @@ export type {
   ChainData,
   ChainInfo,
 } from './types'
-
-export * from './connectors'
