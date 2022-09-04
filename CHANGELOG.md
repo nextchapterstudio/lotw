@@ -1,5 +1,11 @@
 # lotw
 
+## 1.0.5
+
+### Patch Changes
+
+- [`5c01ca2`](https://github.com/nextchapterstudio/lotw/commit/5c01ca2a28abaa6105d7670b5b62844c197074c6) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixed react entry point. FML
+
 ## 1.0.4
 
 ### Patch Changes
