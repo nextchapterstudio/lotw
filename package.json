@@ -31,7 +31,7 @@
       "default": "./lib/connectors/coinbase.js",
       "types": "./lib/connectors/coinbase.d.ts"
     },
-    "./connectors/metmask": {
+    "./connectors/metamask": {
       "module": "./lib/connectors/metamask.mjs",
       "default": "./lib/connectors/metamask.js",
       "types": "./lib/connectors/metamask.d.ts"
