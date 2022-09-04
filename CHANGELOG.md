@@ -1,5 +1,11 @@
 # lotw
 
+## 1.0.2
+
+### Patch Changes
+
+- [#3](https://github.com/nextchapterstudio/lotw/pull/3) [`c1403de`](https://github.com/nextchapterstudio/lotw/commit/c1403de890e05a8321baf1b0611982327d0c1407) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixed node resolution hopefully
+
 ## 1.0.1
 
 ### Patch Changes
