@@ -1,5 +1,11 @@
 # lotw
 
+## 1.0.4
+
+### Patch Changes
+
+- [`768bf71`](https://github.com/nextchapterstudio/lotw/commit/768bf71fcf5348e4d85c2a342ac5483e738770b6) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixed multiple entry points. Really. I promise it's right this time!
+
 ## 1.0.3
 
 ### Patch Changes
