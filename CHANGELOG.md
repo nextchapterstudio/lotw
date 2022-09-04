@@ -1,5 +1,11 @@
 # lotw
 
+## 1.0.6
+
+### Patch Changes
+
+- [`2188eb0`](https://github.com/nextchapterstudio/lotw/commit/2188eb0688a10fbb1c3ae156e65cbefee322f177) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixed typo in exports for metamask connector
+
 ## 1.0.5
 
 ### Patch Changes
