@@ -1,0 +1,5 @@
+{
+  "main": "lib/connectors/metamask.js",
+  "module": "lib/connectors/metamask.mjs",
+  "types": "lib/connectors/metamask.d.ts"
+}
