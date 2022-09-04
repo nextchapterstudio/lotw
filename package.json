@@ -18,6 +18,26 @@
       "module": "./lib/react.mjs",
       "default": "./lib/react.js",
       "types": "./lib/react.d.ts"
+    },
+    "./connectors/injected": {
+      "module": "./lib/connectors/injected.mjs",
+      "default": "./lib/connectors/injected.js",
+      "types": "./lib/connectors/injected.d.ts"
+    },
+    "./connectors/coinbase": {
+      "module": "./lib/connectors/coinbase.mjs",
+      "default": "./lib/connectors/coinbase.js",
+      "types": "./lib/connectors/coinbase.d.ts"
+    },
+    "./connectors/metmask": {
+      "module": "./lib/connectors/metamask.mjs",
+      "default": "./lib/connectors/metamask.js",
+      "types": "./lib/connectors/metamask.d.ts"
+    },
+    "./connectors/wallet-connect": {
+      "module": "./lib/connectors/wallet-connect.mjs",
+      "default": "./lib/connectors/wallet-connect.js",
+      "types": "./lib/connectors/wallet-connect.d.ts"
     }
   },
   "keywords": [
