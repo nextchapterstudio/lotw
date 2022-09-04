@@ -1,5 +1,11 @@
 # lotw
 
+## 1.0.3
+
+### Patch Changes
+
+- [`4cafde6`](https://github.com/nextchapterstudio/lotw/commit/4cafde64cefa2191442cba07f9897cc170e0ccde) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixed package inclusions... Oops
+
 ## 1.0.2
 
 ### Patch Changes
