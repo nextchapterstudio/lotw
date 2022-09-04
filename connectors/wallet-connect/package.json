@@ -1,5 +1,5 @@
 {
-  "main": "lib/connectors/wallet-connect.js",
-  "module": "lib/connectors/wallet-connect.mjs",
-  "types": "lib/connectors/wallet-connect.d.ts"
+  "main": "../../lib/connectors/wallet-connect.js",
+  "module": "../../lib/connectors/wallet-connect.mjs",
+  "types": "../../lib/connectors/wallet-connect.d.ts"
 }

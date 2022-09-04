@@ -1,5 +1,5 @@
 {
-  "main": "lib/react.js",
-  "module": "lib/react.mjs",
-  "types": "lib/react.d.ts"
+  "main": "../../lib/react.js",
+  "module": "../../lib/react.mjs",
+  "types": "../../lib/react.d.ts"
 }

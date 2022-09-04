@@ -1,5 +1,5 @@
 {
-  "main": "lib/connectors/injected.js",
-  "module": "lib/connectors/injected.mjs",
-  "types": "lib/connectors/injected.d.ts"
+  "main": "../../lib/connectors/injected.js",
+  "module": "../../lib/connectors/injected.mjs",
+  "types": "../../lib/connectors/injected.d.ts"
 }

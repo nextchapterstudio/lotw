@@ -1,5 +1,5 @@
 {
-  "main": "lib/connectors/coinbase.js",
-  "module": "lib/connectors/coinbase.mjs",
-  "types": "lib/connectors/coinbase.d.ts"
+  "main": "../../lib/connectors/coinbase.js",
+  "module": "../../lib/connectors/coinbase.mjs",
+  "types": "../../lib/connectors/coinbase.d.ts"
 }
