@@ -6,7 +6,9 @@
   "types": "lib/index.d.ts",
   "sideEffect": false,
   "files": [
-    "/lib"
+    "/lib",
+    "/react",
+    "/connectors"
   ],
   "exports": {
     ".": {
