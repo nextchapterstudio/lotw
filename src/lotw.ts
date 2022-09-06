@@ -1,9 +1,12 @@
-import type { InterpreterFrom } from 'xstate'
 import type { ChainInfo, LotwConnector } from './types'
 
-import { interpret } from 'xstate'
+import { interpret, type InterpreterFrom, type StateValueFrom } from 'xstate'
 
 import { makeWalletMachine } from './wallet.machine'
+
+type WalletStateValue<Id extends string> = StateValueFrom<
+  ReturnType<typeof makeWalletMachine<Id>>
+>
 
 export class Lotw<Id extends string> {
   private _walletActor: InterpreterFrom<
@@ -12,6 +15,10 @@ export class Lotw<Id extends string> {
 
   constructor(connectors: LotwConnector<Id>[], _options?: {}) {
     this._walletActor = interpret(makeWalletMachine(connectors)).start()
+  }
+
+  is(stateValue: WalletStateValue<Id>) {
+    this._walletActor.state.matches(stateValue)
   }
 
   connectWallet(connector: Id, chainInfo?: ChainInfo) {
