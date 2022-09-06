@@ -1,5 +1,11 @@
 # lotw
 
+## 1.1.0
+
+### Minor Changes
+
+- [#10](https://github.com/nextchapterstudio/lotw/pull/10) [`23624cf`](https://github.com/nextchapterstudio/lotw/commit/23624cf1d2085a3d9c2a3f4bba2f98c950163b61) Thanks [@nobrayner](https://github.com/nobrayner)! - Added `Lotw.is` to query the current state of the underlying machine.
+
 ## 1.0.6
 
 ### Patch Changes
