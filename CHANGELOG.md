@@ -1,5 +1,13 @@
 # lotw
 
+## 1.2.0
+
+### Minor Changes
+
+- [#14](https://github.com/nextchapterstudio/lotw/pull/14) [`67db69d`](https://github.com/nextchapterstudio/lotw/commit/67db69d3d3fc7329c5281b6c25eafd18ea208a46) Thanks [@nobrayner](https://github.com/nobrayner)! - Implement `xstate.Subscribable` for Lotw instances. This allows an Lotw instance to be invoked as a service in other machines.
+
+- [`f03922d`](https://github.com/nextchapterstudio/lotw/commit/f03922da801834568130fc6d1d95bc15ea3c9197) Thanks [@nobrayner](https://github.com/nobrayner)! - Added `InferConnectorIds` type to more easily infer the configured connector ids
+
 ## 1.1.0
 
 ### Minor Changes
