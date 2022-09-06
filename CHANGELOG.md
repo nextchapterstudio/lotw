@@ -1,5 +1,11 @@
 # lotw
 
+## 1.2.1
+
+### Patch Changes
+
+- [`b9343f7`](https://github.com/nextchapterstudio/lotw/commit/b9343f7e49718d3a5778c1f373757815e2f55b6f) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixed `LotwEvent` not being exported. Oops.
+
 ## 1.2.0
 
 ### Minor Changes
