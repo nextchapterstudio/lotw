@@ -17,15 +17,24 @@ export class Lotw<Id extends string> {
     this._walletActor = interpret(makeWalletMachine(connectors)).start()
   }
 
+  /**
+   * Whether the current state is, or is a child of, the given state value
+   */
   is(stateValue: WalletStateValue<Id>) {
     this._walletActor.state.matches(stateValue)
   }
 
-  connectWallet(connector: Id, chainInfo?: ChainInfo) {
+  /**
+   * Attempts to connect to the given wallet, rejecting if an error occurs or a user rejects
+   *
+   * @param connectorId - The connector id to be used when attempting to connect
+   * @param chainInfo - Optional chain info to automatically switch networks as part connecting
+   */
+  connectWallet(connectorId: Id, chainInfo?: ChainInfo) {
     return new Promise<void>((resolve, reject) => {
       this._walletActor.send({
         type: 'CONNECT',
-        connector,
+        connector: connectorId,
         chain: chainInfo,
         successCallback: resolve,
         failureCallback: reject,
@@ -33,10 +42,17 @@ export class Lotw<Id extends string> {
     })
   }
 
+  /**
+   * Disconnects from the current wallet
+   */
   disconnectWallet() {
     this._walletActor.send({ type: 'DISCONNECT' })
   }
 
+  /**
+   * Requests the wallet to switch to the given network chain info
+   * @param chainInfo - The chain info to switch to
+   */
   switchNetwork(chainInfo: ChainInfo) {
     return new Promise<void>((resolve, reject) => {
       this._walletActor.send({
@@ -48,14 +64,23 @@ export class Lotw<Id extends string> {
     })
   }
 
+  /**
+   * Returns the current connector instance, or null if no wallet is connected
+   */
   getConnector() {
     return this._walletActor.state.context.connector
   }
 
+  /*
+   * Returns the current connector id, or null if no wallet is connected
+   */
   getConnectorId() {
     return this.getConnector()?.id() ?? null
   }
 
+  /**
+   * Returns the current provider instance, or null if no wallet is connected
+   */
   getProvider() {
     return this.getConnector()?.getProvider() ?? null
   }
@@ -98,7 +123,9 @@ export class Lotw<Id extends string> {
   }
 
   /**
-   * Internal use only
+   * Internal use only / Escape hatch if needed
+   *
+   * Returns the wrapped xstate interpreter
    */
   getWalletActor() {
     return this._walletActor
