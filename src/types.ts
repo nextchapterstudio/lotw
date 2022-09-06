@@ -1,5 +1,6 @@
 import type { ExternalProvider } from '@ethersproject/providers'
 import type { Web3Provider } from './helpers'
+import type { Lotw } from './lotw'
 
 export type InjectedProvider = ExternalProvider & {
   isCoinbaseWallet?: boolean
@@ -58,6 +59,10 @@ export type LotwConnectorOptions = {
    */
   chainInfo?: ChainInfo
 }
+
+export type InferConnectorIds<T extends Lotw<any>> = T extends Lotw<infer Id>
+  ? Id
+  : never
 
 export type RegisteredConnectorsMap<Id extends string> = Map<
   Id,
