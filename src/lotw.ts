@@ -1,6 +1,13 @@
 import type { ChainInfo, LotwConnector } from './types'
 
-import { interpret, type InterpreterFrom, type StateValueFrom } from 'xstate'
+import {
+  interpret,
+  type Observer,
+  type Subscription,
+  type InterpreterFrom,
+  type StateValueFrom,
+  type Subscribable,
+} from 'xstate'
 
 import { makeWalletMachine } from './wallet.machine'
 
@@ -8,13 +15,51 @@ type WalletStateValue<Id extends string> = StateValueFrom<
   ReturnType<typeof makeWalletMachine<Id>>
 >
 
-export class Lotw<Id extends string> {
+export type LotwEvent =
+  | { type: 'LOTW_CONNECTED'; accounts: string[]; chain: string }
+  | { type: 'LOTW_DISCONNECTED' }
+  | { type: 'LOTW_ACCOUNTS_CHANGED'; accounts: string[] }
+  | { type: 'LOTW_CHAIN_CHANGED'; chain: string }
+
+export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
   private _walletActor: InterpreterFrom<
     ReturnType<typeof makeWalletMachine<Id>>
   >
 
   constructor(connectors: LotwConnector<Id>[], _options?: {}) {
     this._walletActor = interpret(makeWalletMachine(connectors)).start()
+  }
+
+  /**
+   * Lotw instance as an observable
+   */
+  subscribe(
+    nextOrObserver: Observer<LotwEvent> | ((value: LotwEvent) => void)
+  ): Subscription {
+    const next =
+      typeof nextOrObserver === 'object' ? nextOrObserver.next : nextOrObserver
+
+    const connectedCallback = (accounts: string[], chain: string) =>
+      next({ type: 'LOTW_CONNECTED', accounts, chain })
+    const disconnectedCallback = () => next({ type: 'LOTW_DISCONNECTED' })
+    const accountsChangedCallback = (accounts: string[]) =>
+      next({ type: 'LOTW_ACCOUNTS_CHANGED', accounts })
+    const chainChangedCallback = (chain: string) =>
+      next({ type: 'LOTW_CHAIN_CHANGED', chain })
+
+    this.on('connected', connectedCallback)
+    this.on('disconnected', disconnectedCallback)
+    this.on('accountsChanged', accountsChangedCallback)
+    this.on('chainChanged', chainChangedCallback)
+
+    return {
+      unsubscribe: () => {
+        this.off('connected', connectedCallback)
+        this.off('disconnected', disconnectedCallback)
+        this.off('accountsChanged', accountsChangedCallback)
+        this.on('chainChanged', chainChangedCallback)
+      },
+    }
   }
 
   /**
