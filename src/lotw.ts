@@ -1,4 +1,4 @@
-import type { ChainInfo, LotwConnector } from './types'
+import type { ChainInfo, LotwConnector, LotwEvent } from './types'
 
 import {
   interpret,
@@ -14,12 +14,6 @@ import { makeWalletMachine } from './wallet.machine'
 type WalletStateValue<Id extends string> = StateValueFrom<
   ReturnType<typeof makeWalletMachine<Id>>
 >
-
-export type LotwEvent =
-  | { type: 'LOTW_CONNECTED'; accounts: string[]; chain: string }
-  | { type: 'LOTW_DISCONNECTED' }
-  | { type: 'LOTW_ACCOUNTS_CHANGED'; accounts: string[] }
-  | { type: 'LOTW_CHAIN_CHANGED'; chain: string }
 
 export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
   private _walletActor: InterpreterFrom<

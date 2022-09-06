@@ -68,3 +68,9 @@ export type RegisteredConnectorsMap<Id extends string> = Map<
   Id,
   LotwConnector<Id>
 >
+
+export type LotwEvent =
+  | { type: 'LOTW_CONNECTED'; accounts: string[]; chain: string }
+  | { type: 'LOTW_DISCONNECTED' }
+  | { type: 'LOTW_ACCOUNTS_CHANGED'; accounts: string[] }
+  | { type: 'LOTW_CHAIN_CHANGED'; chain: string }

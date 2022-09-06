@@ -5,6 +5,7 @@ export type {
   InferConnectorIds,
   LotwConnector,
   LotwConnectorOptions,
+  LotwEvent,
   ChainData,
   ChainInfo,
 } from './types'
