@@ -130,11 +130,7 @@ export function makeWalletMachine<Id extends string>(
           },
         },
         Disconnected: {
-          entry: [
-            'clearContext',
-            'clearProviderTypeFromLocalStorage',
-            'emitDisconnectedEvent',
-          ],
+          entry: ['clearContext', 'clearProviderTypeFromLocalStorage'],
           on: {
             CONNECT: {
               target: 'Connecting',
@@ -172,7 +168,7 @@ export function makeWalletMachine<Id extends string>(
             },
             DISCONNECT: {
               target: 'Disconnected',
-              actions: ['disconnect'],
+              actions: ['disconnect', 'emitDisconnectedEvent'],
             },
             CHANGE_CHAIN: {
               actions: ['saveChainIdToContext', 'emitChainChangedEvent'],
