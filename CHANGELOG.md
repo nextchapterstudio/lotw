@@ -1,5 +1,11 @@
 # lotw
 
+## 1.2.2
+
+### Patch Changes
+
+- [`c196542`](https://github.com/nextchapterstudio/lotw/commit/c196542776129eaab3c3c33886be64403385b5fc) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixed disconnect event being emitted after failed connect attempts. The disconnected event will now only be emitted when the state changes from connected to disconnected.
+
 ## 1.2.1
 
 ### Patch Changes
