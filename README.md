@@ -6,6 +6,8 @@ Documentation is work-in-progress
 
 ## Install 
 
+Requires Typescript 4.7+
+
 To install LOTW, you will also need to install xstate and ethers:
 ```bash
 yarn add lotw xstate @xstate/react ethers
