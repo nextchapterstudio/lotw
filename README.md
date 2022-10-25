@@ -1,4 +1,4 @@
-# LOTW
+# Lotw
 
 Web3 Wallet connection driven by state charts!
 
@@ -8,7 +8,7 @@ Documentation is work-in-progress
 
 Requires Typescript 4.7+
 
-To install LOTW, you will also need to install xstate and ethers:
+To install Lotw, you will also need to install xstate and ethers:
 ```bash
 yarn add lotw xstate @xstate/react ethers
 ```
