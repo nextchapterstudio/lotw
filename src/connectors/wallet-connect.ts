@@ -45,7 +45,16 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     const wcProvider = this._getWCProvider()
     const provider = this.getProvider()
 
-    await wcProvider.enable()
+    try {
+      await wcProvider.enable()
+    } catch (error) {
+      console.log('Failed to enable provider')
+      // Disconnect and null out WC Provider
+      // This resets the qr code modal
+      await wcProvider.disconnect()
+      this.wcProvider = null
+      throw error
+    }
 
     const accounts = wcProvider.accounts
     const chainId = `0x${wcProvider.chainId.toString(16)}`
