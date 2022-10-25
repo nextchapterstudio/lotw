@@ -144,6 +144,8 @@ export function makeWalletMachine<Id extends string>(
             onDone: {
               target: 'Connected',
               actions: [
+                'disconnect',
+                'emitDisconnectedEvent',
                 'saveAccountsToContext',
                 'saveChainIdToContext',
                 'saveConnectorToContext',
