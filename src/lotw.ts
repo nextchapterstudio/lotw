@@ -20,6 +20,20 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
     ReturnType<typeof makeWalletMachine<Id>>
   >
 
+  /**
+   * The currently connected accounts (addresses), or null if no wallet is connected
+   */
+  get accounts() {
+    return this._walletActor.getSnapshot().context.accounts
+  }
+
+  /**
+   * The currently connect chain's id in hex, or null if no wallet is connected
+   */
+  get chainId() {
+    return this._walletActor.getSnapshot().context.chainId
+  }
+
   constructor(connectors: LotwConnector<Id>[], _options?: {}) {
     this._walletActor = interpret(makeWalletMachine(connectors)).start()
   }
