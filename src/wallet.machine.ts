@@ -342,6 +342,9 @@ export function makeWalletMachine<Id extends string>(
               send({ type: 'DISCONNECT' })
             }
           })
+          c.connector?.on('disconnect', () => {
+            send({ type: 'DISCONNECT' })
+          })
         },
         switchNetwork: async (c, e) => {
           try {

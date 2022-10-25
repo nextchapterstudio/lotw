@@ -48,6 +48,7 @@ export interface LotwConnector<Id extends string> {
   disconnect(): void
   on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
   on(event: 'chainChanged', callback: (chainId: string) => void): void
+  on(event: 'disconnect', callback: (arg: unknown) => void): void
 }
 
 export type LotwConnectorOptions = {

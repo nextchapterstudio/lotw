@@ -102,6 +102,7 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
 
   on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
   on(event: 'chainChanged', callback: (chainId: string) => void): void
+  on(event: 'disconnect', callback: (arg: unknown) => void): void
   on(event: string, callback: (...args: any[]) => void): void {
     const provider = this.getProvider()
 

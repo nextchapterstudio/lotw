@@ -90,10 +90,11 @@ export class BaseInjectedConnector<Id extends string>
     return { accounts, chainId }
   }
 
-  disconnect(): void {}
+  disconnect(): void { }
 
   on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
   on(event: 'chainChanged', callback: (chainId: string) => void): void
+  on(event: 'disconnect', callback: (arg: unknown) => void): void
   on(event: unknown, callback: unknown): void {
     const provider = this.getProvider()
 
