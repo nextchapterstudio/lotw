@@ -1,5 +1,21 @@
 # lotw
 
+## 1.3.0
+
+### Minor Changes
+
+- [`4c456ac`](https://github.com/nextchapterstudio/lotw/commit/4c456ac24b7985df99e2624f63445d23db5831ff) Thanks [@nobrayner](https://github.com/nobrayner)! - Added the ability to quickly reference accounts and chainId from lotw instance
+
+### Patch Changes
+
+- [`809cd8b`](https://github.com/nextchapterstudio/lotw/commit/809cd8bf84f06ec76eba7e518719d6541e7ce3ef) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixes #19. Disconnects the currently connected connector when connecting while already connected
+
+- [`809cd8b`](https://github.com/nextchapterstudio/lotw/commit/809cd8bf84f06ec76eba7e518719d6541e7ce3ef) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixes #17. Closing the Wallet Connect QR Modal now correctly disposes the modal state, allowing for a second attempt.
+
+- [`e47cc81`](https://github.com/nextchapterstudio/lotw/commit/e47cc8114e7bdb36356bd3e5d0d1172985f6bb96) Thanks [@nobrayner](https://github.com/nobrayner)! - Disconnecting WalletConnect session from your wallet now disconnects Lotw
+
+- [`2b46f5d`](https://github.com/nextchapterstudio/lotw/commit/2b46f5d6a61944af74ed7a0e8b182cd48a131f49) Thanks [@nobrayner](https://github.com/nobrayner)! - Subscribing to Lotw will notify the current state immediately, and then any updates will come through as normal. This fixes hangs while waiting for Lotw to change
+
 ## 1.2.2
 
 ### Patch Changes
