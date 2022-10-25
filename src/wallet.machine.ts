@@ -275,8 +275,8 @@ export function makeWalletMachine<Id extends string>(
             LOTW_CONNECTOR_KEY
           ) as Id | null
 
-          if (connectorId === null)
-            throw new LotwError({ code: 'NO_CONNECTOR' })
+          // Error if no connector stored so we go to disconnected state
+          if (connectorId === null) throw 'NO_CONNECTOR'
 
           const connector = c.registeredConnectors.get(connectorId)
 

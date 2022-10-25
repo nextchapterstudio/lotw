@@ -2,7 +2,6 @@ type LotwErrorCodes =
   | 'CONNECTOR_NOT_REGISTERED'
   | 'CONNECTOR_ERROR'
   | 'USER_REJECTED'
-  | 'NO_CONNECTOR'
 
 export class LotwError extends Error {
   public readonly cause?
