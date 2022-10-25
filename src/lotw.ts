@@ -33,6 +33,16 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
     const next =
       typeof nextOrObserver === 'object' ? nextOrObserver.next : nextOrObserver
 
+    if (this._walletActor.state.matches('Connected')) {
+      next({
+        type: 'LOTW_CONNECTED',
+        accounts: this._walletActor.state.context.accounts,
+        chain: this._walletActor.state.context.chainId!,
+      })
+    } else {
+      next({ type: 'LOTW_DISCONNECTED' })
+    }
+
     const connectedCallback = (accounts: string[], chain: string) =>
       next({ type: 'LOTW_CONNECTED', accounts, chain })
     const disconnectedCallback = () => next({ type: 'LOTW_DISCONNECTED' })
