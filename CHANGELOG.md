@@ -1,5 +1,11 @@
 # lotw
 
+## 1.3.1
+
+### Patch Changes
+
+- [`d01b39f`](https://github.com/nextchapterstudio/lotw/commit/d01b39f3ecaa1a968f3eda99766bfa1b5a918dc7) Thanks [@alexarcombe](https://github.com/alexarcombe)! - Fixed emitted event from connected to ensure that XState has settled on this state, this fixes a race condition when trying to read the connector when recieving the connected event.
+
 ## 1.3.0
 
 ### Minor Changes
