@@ -159,7 +159,10 @@ export function makeWalletMachine<Id extends string>(
           },
         },
         Connected: {
-          entry: ['emitConnectedEvent'],
+          // This ensure that XState has settled on this state, this fixes 
+          // a race condition when trying to read the connector when 
+          // recieving the connected event.
+          after: { 1: { actions: ['emitConnectedEvent'] } },
           invoke: {
             id: 'handleChainOrAccountChange',
             src: 'handleChainOrAccountChange',
@@ -243,8 +246,8 @@ export function makeWalletMachine<Id extends string>(
         disconnect: (c) => {
           c.connector?.disconnect()
         },
-        emitConnectedEvent: (c, e) => {
-          c.emitter.emit('connected', e.data.accounts, e.data.chainId)
+        emitConnectedEvent: (c, _e) => {
+          c.emitter.emit('connected', c.accounts, c.chainId)
         },
         emitDisconnectedEvent: (c) => {
           c.emitter.emit('disconnected')
