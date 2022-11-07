@@ -1,5 +1,11 @@
 # lotw
 
+## 1.3.3
+
+### Patch Changes
+
+- [`b91e72d`](https://github.com/nextchapterstudio/lotw/commit/b91e72d5b4d65f5f9754ada24ed23d0059a4d1e4) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixes issue with disconnect event being emitted even though there was no existing connection
+
 ## 1.3.2
 
 ### Patch Changes
