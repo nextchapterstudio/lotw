@@ -83,8 +83,8 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
   /**
    * Whether the current state is, or is a child of, the given state value
    */
-  is(stateValue: WalletStateValue<Id>) {
-    this._walletActor.state.matches(stateValue)
+  is(stateValue: WalletStateValue<Id>): boolean {
+    return this._walletActor.state.matches(stateValue)
   }
 
   /**
