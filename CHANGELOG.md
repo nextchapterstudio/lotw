@@ -1,5 +1,11 @@
 # lotw
 
+## 1.3.2
+
+### Patch Changes
+
+- [`aafc8a8`](https://github.com/nextchapterstudio/lotw/commit/aafc8a80fc1c2e28bb0aa15c106d488e308d452b) Thanks [@nobrayner](https://github.com/nobrayner)! - Lotw.is now correctly returns if it is in the requested state
+
 ## 1.3.1
 
 ### Patch Changes
