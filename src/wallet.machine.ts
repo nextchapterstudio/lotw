@@ -141,26 +141,39 @@ export function makeWalletMachine<Id extends string>(
           invoke: {
             id: 'connectWallet',
             src: 'connectWallet',
-            onDone: {
-              target: 'Connected',
-              actions: [
-                'disconnect',
-                'emitDisconnectedEvent',
-                'saveAccountsToContext',
-                'saveChainIdToContext',
-                'saveConnectorToContext',
-                'executeSuccessCallback',
-                'saveProviderTypeToLocalStorage',
-              ],
-            },
+            onDone: [
+              {
+                target: 'Connected',
+                cond: 'ifCurrentlyConnected',
+                actions: [
+                  'disconnect',
+                  'emitDisconnectedEvent',
+                  'saveAccountsToContext',
+                  'saveChainIdToContext',
+                  'saveConnectorToContext',
+                  'executeSuccessCallback',
+                  'saveProviderTypeToLocalStorage',
+                ],
+              },
+              {
+                target: 'Connected',
+                actions: [
+                  'saveAccountsToContext',
+                  'saveChainIdToContext',
+                  'saveConnectorToContext',
+                  'executeSuccessCallback',
+                  'saveProviderTypeToLocalStorage',
+                ],
+              },
+            ],
             onError: {
               target: 'Disconnected',
             },
           },
         },
         Connected: {
-          // This ensure that XState has settled on this state, this fixes 
-          // a race condition when trying to read the connector when 
+          // This ensure that XState has settled on this state, this fixes
+          // a race condition when trying to read the connector when
           // recieving the connected event.
           after: { 1: { actions: ['emitConnectedEvent'] } },
           invoke: {
@@ -272,6 +285,9 @@ export function makeWalletMachine<Id extends string>(
           const hasProvider = !!connectorId
 
           return !hasProvider
+        },
+        ifCurrentlyConnected: (c) => {
+          return c.connector !== null
         },
       },
       services: {
