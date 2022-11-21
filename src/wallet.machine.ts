@@ -6,6 +6,7 @@ import type {
 
 import { createMachine, assign } from 'xstate'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
+import { getAddress as getChecksumAddress } from '@ethersproject/address'
 
 import { LotwError } from './lotw-error'
 
@@ -235,7 +236,7 @@ export function makeWalletMachine<Id extends string>(
         },
         saveAccountsToContext: assign((_, e) => {
           return {
-            accounts: e.data.accounts,
+            accounts: e.data.accounts.map(getChecksumAddress),
           }
         }),
         saveChainIdToContext: assign((_, e) => {
@@ -256,20 +257,20 @@ export function makeWalletMachine<Id extends string>(
           const callback = e.data.successCallback
           callback?.()
         },
-        disconnect: (c) => {
+        disconnect: (c, _) => {
           c.connector?.disconnect()
         },
-        emitConnectedEvent: (c, _e) => {
+        emitConnectedEvent: (c, _) => {
           c.emitter.emit('connected', c.accounts, c.chainId)
         },
-        emitDisconnectedEvent: (c) => {
+        emitDisconnectedEvent: (c, _) => {
           c.emitter.emit('disconnected')
         },
-        emitAccountsChangedEvent: (c, e) => {
-          c.emitter.emit('accountsChanged', e.data.accounts)
+        emitAccountsChangedEvent: (c, _) => {
+          c.emitter.emit('accountsChanged', c.accounts)
         },
-        emitChainChangedEvent: (c, e) => {
-          c.emitter.emit('chainChanged', e.data.chainId)
+        emitChainChangedEvent: (c, _) => {
+          c.emitter.emit('chainChanged', c.chainId)
         },
       },
       guards: {
