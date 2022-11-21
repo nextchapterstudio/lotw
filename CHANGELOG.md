@@ -1,5 +1,11 @@
 # lotw
 
+## 1.3.4
+
+### Patch Changes
+
+- [`9214bcd`](https://github.com/nextchapterstudio/lotw/commit/9214bcd5a3bba2769cb0c73a8895f05da434d82f) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixed chainChanged event not unsubscribing correctly
+
 ## 1.3.3
 
 ### Patch Changes
