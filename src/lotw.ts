@@ -75,7 +75,7 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
         this.off('connected', connectedCallback)
         this.off('disconnected', disconnectedCallback)
         this.off('accountsChanged', accountsChangedCallback)
-        this.on('chainChanged', chainChangedCallback)
+        this.off('chainChanged', chainChangedCallback)
       },
     }
   }
