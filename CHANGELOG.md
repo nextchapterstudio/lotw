@@ -1,5 +1,11 @@
 # lotw
 
+## 2.0.0
+
+### Major Changes
+
+- [`000fdeb`](https://github.com/nextchapterstudio/lotw/commit/000fdeb4c0fd9255db84cbe2123bd41f66815c1f) Thanks [@nobrayner](https://github.com/nobrayner)! - Store wallet address as checksummed address instead of lowercase address
+
 ## 1.3.4
 
 ### Patch Changes
