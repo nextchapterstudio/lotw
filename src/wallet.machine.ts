@@ -21,21 +21,21 @@ export function makeWalletMachine<Id extends string>(
 
   type WalletEvent =
     | {
-      type: 'CONNECT'
-      connector: Id
-      chain?: ChainInfo
-      successCallback?: CallbackFunction
-      failureCallback?: (error: unknown) => void
-    }
+        type: 'CONNECT'
+        connector: Id
+        chain?: ChainInfo
+        successCallback?: CallbackFunction
+        failureCallback?: (error: unknown) => void
+      }
     | { type: 'DISCONNECT' }
     | { type: 'CHANGE_CHAIN'; data: { chainId: string } }
     | { type: 'CHANGE_ACCOUNTS'; data: { accounts: string[] } }
     | {
-      type: 'SWITCH_NETWORK'
-      chain: ChainInfo
-      successCallback?: CallbackFunction
-      failureCallback?: (error: unknown) => void
-    }
+        type: 'SWITCH_NETWORK'
+        chain: ChainInfo
+        successCallback?: CallbackFunction
+        failureCallback?: (error: unknown) => void
+      }
 
   type WalletContext = {
     emitter: Emitter
@@ -353,17 +353,16 @@ export function makeWalletMachine<Id extends string>(
         },
         handleChainOrAccountChange: (c) => (send) => {
           c.connector?.on('chainChanged', (chainId) => {
+            console.info('[lotw] chainChanged:', chainId)
             send({ type: 'CHANGE_CHAIN', data: { chainId } })
           })
           c.connector?.on('accountsChanged', (accounts) => {
+            console.info('[lotw] accountsChanged:', accounts)
             if (accounts.length) {
               send({ type: 'CHANGE_ACCOUNTS', data: { accounts } })
             } else {
               send({ type: 'DISCONNECT' })
             }
-          })
-          c.connector?.on('disconnect', () => {
-            send({ type: 'DISCONNECT' })
           })
         },
         switchNetwork: async (c, e) => {
