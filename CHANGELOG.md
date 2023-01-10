@@ -1,5 +1,11 @@
 # lotw
 
+## 2.0.1
+
+### Patch Changes
+
+- [`c030ebc`](https://github.com/nextchapterstudio/lotw/commit/c030ebc276739cbf918532fc423062f2d814b1be) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixes disconnecting when switching networks. This was caused by an incorrect usage of the 'disconnect' event from wallets
+
 ## 2.0.0
 
 ### Major Changes
