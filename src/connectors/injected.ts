@@ -51,7 +51,9 @@ export class BaseInjectedConnector<Id extends string>
     ])
 
     const targetChainInfo = chainInfo ?? this.chainInfo
-    const desiredChainId = chainIdFromChainInfo(targetChainInfo)
+    const desiredChainId = targetChainInfo
+      ? chainIdFromChainInfo(targetChainInfo)
+      : undefined
 
     if (!desiredChainId || chainId === desiredChainId) {
       return {
@@ -90,16 +92,48 @@ export class BaseInjectedConnector<Id extends string>
     return { accounts, chainId }
   }
 
-  disconnect(): void { }
+  disconnect(): void {}
 
   on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
   on(event: 'chainChanged', callback: (chainId: string) => void): void
   on(event: 'disconnect', callback: (arg: unknown) => void): void
+  on(
+    event: 'connect',
+    callback: (connectInfo: { chainId: string }) => void
+  ): void
   on(event: unknown, callback: unknown): void {
     const provider = this.getProvider()
 
     // @ts-expect-error
     provider?.provider.on(event, callback)
+  }
+
+  off(event: 'accountsChanged', callback: (accounts: string[]) => void): void
+  off(event: 'chainChanged', callback: (chainId: string) => void): void
+  off(event: 'disconnect', callback: (arg: unknown) => void): void
+  off(
+    event: 'connect',
+    callback: (connectInfo: { chainId: string }) => void
+  ): void
+  off(event: unknown, callback: unknown): void {
+    const provider = this.getProvider()
+
+    // @ts-expect-error
+    provider?.provider.off(event, callback)
+  }
+
+  once(event: 'accountsChanged', callback: (accounts: string[]) => void): void
+  once(event: 'chainChanged', callback: (chainId: string) => void): void
+  once(event: 'disconnect', callback: (arg: unknown) => void): void
+  once(
+    event: 'connect',
+    callback: (connectInfo: { chainId: string }) => void
+  ): void
+  once(event: unknown, callback: unknown): void {
+    const provider = this.getProvider()
+
+    // @ts-expect-error
+    provider?.provider.once(event, callback)
   }
 }
 

@@ -60,7 +60,9 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     const chainId = `0x${wcProvider.chainId.toString(16)}`
 
     const targetChainInfo = chainInfo ?? this.options.chainInfo
-    const desiredChainId = chainIdFromChainInfo(targetChainInfo)
+    const desiredChainId = targetChainInfo
+      ? chainIdFromChainInfo(targetChainInfo)
+      : undefined
 
     if (!desiredChainId || chainId === desiredChainId) {
       return {
@@ -103,19 +105,42 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
   on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
   on(event: 'chainChanged', callback: (chainId: string) => void): void
   on(event: 'disconnect', callback: (arg: unknown) => void): void
+  on(
+    event: 'connect',
+    callback: (connectInfo: { chainId: string }) => void
+  ): void
   on(event: string, callback: (...args: any[]) => void): void {
     const provider = this.getProvider()
 
-    switch (event) {
-      case 'chainChanged':
-        // @ts-expect-error
-        provider?.provider.on(event, (chainId) => {
-          callback(chainIdFromChainInfo(chainId))
-        })
-        break
-      default:
-        // @ts-expect-error
-        provider?.provider.on(event, callback)
-    }
+    // @ts-expect-error
+    provider?.provider.on(event, callback)
+  }
+
+  off(event: 'accountsChanged', callback: (accounts: string[]) => void): void
+  off(event: 'chainChanged', callback: (chainId: string) => void): void
+  off(event: 'disconnect', callback: (arg: unknown) => void): void
+  off(
+    event: 'connect',
+    callback: (connectInfo: { chainId: string }) => void
+  ): void
+  off(event: string, callback: (...args: any[]) => void): void {
+    const provider = this.getProvider()
+
+    // @ts-expect-error
+    provider?.provider.off(event, callback)
+  }
+
+  once(event: 'accountsChanged', callback: (accounts: string[]) => void): void
+  once(event: 'chainChanged', callback: (chainId: string) => void): void
+  once(event: 'disconnect', callback: (arg: unknown) => void): void
+  once(
+    event: 'connect',
+    callback: (connectInfo: { chainId: string }) => void
+  ): void
+  once(event: string, callback: (...args: any[]) => void): void {
+    const provider = this.getProvider()
+
+    // @ts-expect-error
+    provider?.provider.once(event, callback)
   }
 }

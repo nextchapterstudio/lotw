@@ -1,27 +1,23 @@
-type LotwErrorCodes =
+type LotwErrorCode =
   | 'CONNECTOR_NOT_REGISTERED'
   | 'CONNECTOR_ERROR'
   | 'USER_REJECTED'
 
 export class LotwError extends Error {
-  public readonly cause?
-  public readonly code: LotwErrorCodes
+  public readonly code: LotwErrorCode
 
   constructor(opts: {
-    code: LotwErrorCodes
+    code: LotwErrorCode
     message?: string
     cause?: unknown
   }) {
     const message = opts.message ?? getErrorMessage(opts.cause, opts.code)
     const cause = getErrorFromUnknown(opts.cause)
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore https://github.com/tc39/proposal-error-cause
-    super(message, { cause })
+    super(`${message}\n\nCaused by: ${cause}`)
 
     this.name = 'LotwError'
     this.code = opts.code
-    this.cause = cause
 
     Object.setPrototypeOf(this, new.target.prototype)
   }

@@ -9,6 +9,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { getAddress as getChecksumAddress } from '@ethersproject/address'
 
 import { LotwError } from './lotw-error'
+import { chainIdFromChainInfo } from './helpers'
 
 const LOTW_CONNECTOR_KEY = 'lotw::connector'
 
@@ -241,7 +242,7 @@ export function makeWalletMachine<Id extends string>(
         }),
         saveChainIdToContext: assign((_, e) => {
           return {
-            chainId: e.data.chainId,
+            chainId: chainIdFromChainInfo(e.data.chainId),
           }
         }),
         saveConnectorToContext: assign((_, e) => {
@@ -352,13 +353,24 @@ export function makeWalletMachine<Id extends string>(
           }
         },
         handleChainOrAccountChange: (c) => (send) => {
-          c.connector?.on('chainChanged', (chainId) => {
+          c.connector?.on('chainChanged', (rawChainId) => {
+            const chainId = chainIdFromChainInfo(rawChainId)
+
             console.info('[lotw] chainChanged:', chainId)
-            send({ type: 'CHANGE_CHAIN', data: { chainId } })
+
+            send({
+              type: 'CHANGE_CHAIN',
+              data: { chainId },
+            })
           })
-          c.connector?.on('accountsChanged', (accounts) => {
+          c.connector?.on('accountsChanged', (rawAccounts) => {
+            const accounts = rawAccounts.map((account) =>
+              getChecksumAddress(account)
+            )
+
             console.info('[lotw] accountsChanged:', accounts)
-            if (accounts.length) {
+
+            if (rawAccounts.length) {
               send({ type: 'CHANGE_ACCOUNTS', data: { accounts } })
             } else {
               send({ type: 'DISCONNECT' })
@@ -370,6 +382,12 @@ export function makeWalletMachine<Id extends string>(
             const connector = c.connector!
 
             await connector.connect(e.chain)
+
+            await new Promise<void>((resolve, _) => {
+              connector.once('connect', () => {
+                resolve()
+              })
+            })
 
             return {
               successCallback: e.successCallback,

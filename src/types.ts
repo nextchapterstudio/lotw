@@ -46,9 +46,30 @@ export interface LotwConnector<Id extends string> {
   connect(chainInfo?: ChainInfo): Promise<ConnectionData>
   reconnect(): Promise<ConnectionData>
   disconnect(): void
+
   on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
   on(event: 'chainChanged', callback: (chainId: string) => void): void
-  on(event: 'disconnect', callback: (arg: unknown) => void): void
+  on(event: 'disconnect', callback: (error: unknown) => void): void
+  on(
+    event: 'connect',
+    callback: (connectInfo: { chainId: string }) => void
+  ): void
+
+  off(event: 'accountsChanged', callback: (accounts: string[]) => void): void
+  off(event: 'chainChanged', callback: (chainId: string) => void): void
+  off(event: 'disconnect', callback: (error: unknown) => void): void
+  off(
+    event: 'connect',
+    callback: (connectInfo: { chainId: string }) => void
+  ): void
+
+  once(event: 'accountsChanged', callback: (accounts: string[]) => void): void
+  once(event: 'chainChanged', callback: (chainId: string) => void): void
+  once(event: 'disconnect', callback: (error: unknown) => void): void
+  once(
+    event: 'connect',
+    callback: (connectInfo: { chainId: string }) => void
+  ): void
 }
 
 export type LotwConnectorOptions = {
