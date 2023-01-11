@@ -1,5 +1,11 @@
 # lotw
 
+## 2.0.2
+
+### Patch Changes
+
+- [`05e279f`](https://github.com/nextchapterstudio/lotw/commit/05e279f92bf443e309dc7d61f744c02e49b7cf3f) Thanks [@nobrayner](https://github.com/nobrayner)! - Fixes network switching signalling the new network can be used before it has finished connecting
+
 ## 2.0.1
 
 ### Patch Changes
