@@ -1,6 +1,6 @@
 {
   "name": "lotw",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "main": "lib/index.js",
   "module": "lib/index.mjs",
   "types": "lib/index.d.ts",
