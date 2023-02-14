@@ -6,6 +6,7 @@ export type {
   LotwConnector,
   LotwConnectorOptions,
   LotwEvent,
+  LotwInitializedState,
   ChainData,
   ChainInfo,
 } from './types'

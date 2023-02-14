@@ -1,19 +1,19 @@
-import type { ChainInfo, LotwConnector, LotwEvent } from './types'
+import type {
+  ChainInfo,
+  LotwConnector,
+  LotwEvent,
+  LotwInitializedState,
+} from './types'
 
 import {
   interpret,
   type Observer,
   type Subscription,
   type InterpreterFrom,
-  type StateValueFrom,
   type Subscribable,
 } from 'xstate'
 
 import { makeWalletMachine } from './wallet.machine'
-
-type WalletStateValue<Id extends string> = StateValueFrom<
-  ReturnType<typeof makeWalletMachine<Id>>
->
 
 export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
   private _walletActor: InterpreterFrom<
@@ -47,7 +47,7 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
     const next =
       typeof nextOrObserver === 'object' ? nextOrObserver.next : nextOrObserver
 
-    if (this._walletActor.state.matches('Connected')) {
+    if (this._walletActor.state.hasTag('connected')) {
       next({
         type: 'LOTW_CONNECTED',
         accounts: this._walletActor.state.context.accounts,
@@ -64,6 +64,10 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
       next({ type: 'LOTW_ACCOUNTS_CHANGED', accounts })
     const chainChangedCallback = (chain: string) =>
       next({ type: 'LOTW_CHAIN_CHANGED', chain })
+
+    this.once('initialized', (state: LotwInitializedState) =>
+      next({ type: 'LOTW_INITIALIZED', state })
+    )
 
     this.on('connected', connectedCallback)
     this.on('disconnected', disconnectedCallback)
@@ -83,8 +87,9 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
   /**
    * Whether the current state is, or is a child of, the given state value
    */
-  is(stateValue: WalletStateValue<Id>): boolean {
-    return this._walletActor.state.matches(stateValue)
+  // FIXME: Better type
+  is(tag: Parameters<typeof this._walletActor['state']['hasTag']>[0]): boolean {
+    return this._walletActor.state.hasTag(tag)
   }
 
   /**
@@ -153,6 +158,10 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
   }
 
   on(
+    event: 'initialized',
+    callback: (state: LotwInitializedState) => void
+  ): void
+  on(
     event: 'connected',
     callback: (accounts: string[], chainId: string) => void
   ): void
@@ -164,6 +173,10 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
   }
 
   once(
+    event: 'initialized',
+    callback: (state: LotwInitializedState) => void
+  ): void
+  once(
     event: 'connected',
     callback: (accounts: string[], chainId: string) => void
   ): void
@@ -174,6 +187,10 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
     this._emitter.once(event, callback)
   }
 
+  off(
+    event: 'initialized',
+    callback: (state: LotwInitializedState) => void
+  ): void
   off(
     event: 'connected',
     callback: (accounts: string[], chainId: string) => void

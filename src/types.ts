@@ -91,7 +91,16 @@ export type RegisteredConnectorsMap<Id extends string> = Map<
   LotwConnector<Id>
 >
 
+export type LotwInitializedState =
+  | { status: 'disconnected' }
+  | {
+      status: 'connected'
+      accounts: string[]
+      chain: string
+    }
+
 export type LotwEvent =
+  | { type: 'LOTW_INITIALIZED'; state: LotwInitializedState }
   | { type: 'LOTW_CONNECTED'; accounts: string[]; chain: string }
   | { type: 'LOTW_DISCONNECTED' }
   | { type: 'LOTW_ACCOUNTS_CHANGED'; accounts: string[] }

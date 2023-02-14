@@ -1,6 +1,7 @@
 import type {
   ChainInfo,
   LotwConnector as BaseConnector,
+  LotwInitializedState,
   RegisteredConnectorsMap,
 } from './types'
 
@@ -99,15 +100,18 @@ export function makeWalletMachine<Id extends string>(
       initial: 'SSR Check',
       states: {
         'SSR Check': {
+          tags: ['disconnected'],
           always: {
             target: 'Init',
             cond: 'isClientSide',
           },
         },
         Init: {
+          tags: ['disconnected'],
           always: {
-            target: 'Disconnected',
             cond: 'noProvider',
+            target: 'Disconnected',
+            actions: ['emitInitializedDisconnectedEvent'],
           },
           invoke: {
             id: 'checkConnectedAccounts',
@@ -120,60 +124,71 @@ export function makeWalletMachine<Id extends string>(
                   'saveAccountsToContext',
                   'saveChainIdToContext',
                   'saveConnectorToContext',
+                  'emitInitializedConnectedEvent',
                 ],
               },
               {
                 target: 'Disconnected',
+                actions: ['emitInitializedDisconnectedEvent'],
               },
             ],
             onError: {
               target: 'Disconnected',
+              actions: ['emitInitializedDisconnectedEvent'],
             },
           },
         },
         Disconnected: {
+          tags: ['disconnected'],
           entry: ['clearContext', 'clearProviderTypeFromLocalStorage'],
-          on: {
-            CONNECT: {
-              target: 'Connecting',
+          initial: 'Idle',
+          states: {
+            Idle: {
+              on: {
+                CONNECT: {
+                  target: 'Connecting',
+                },
+              },
             },
-          },
-        },
-        Connecting: {
-          invoke: {
-            id: 'connectWallet',
-            src: 'connectWallet',
-            onDone: [
-              {
-                target: 'Connected',
-                cond: 'ifCurrentlyConnected',
-                actions: [
-                  'disconnect',
-                  'emitDisconnectedEvent',
-                  'saveAccountsToContext',
-                  'saveChainIdToContext',
-                  'saveConnectorToContext',
-                  'executeSuccessCallback',
-                  'saveProviderTypeToLocalStorage',
+            Connecting: {
+              tags: ['connecting'],
+              invoke: {
+                id: 'connectWallet',
+                src: 'connectWallet',
+                onDone: [
+                  {
+                    target: '#Wallet Machine.Connected',
+                    cond: 'ifCurrentlyConnected',
+                    actions: [
+                      'disconnect',
+                      'emitDisconnectedEvent',
+                      'saveAccountsToContext',
+                      'saveChainIdToContext',
+                      'saveConnectorToContext',
+                      'executeSuccessCallback',
+                      'saveProviderTypeToLocalStorage',
+                    ],
+                  },
+                  {
+                    target: '#Wallet Machine.Connected',
+                    actions: [
+                      'saveAccountsToContext',
+                      'saveChainIdToContext',
+                      'saveConnectorToContext',
+                      'executeSuccessCallback',
+                      'saveProviderTypeToLocalStorage',
+                    ],
+                  },
                 ],
+                onError: {
+                  target: 'Idle',
+                },
               },
-              {
-                target: 'Connected',
-                actions: [
-                  'saveAccountsToContext',
-                  'saveChainIdToContext',
-                  'saveConnectorToContext',
-                  'executeSuccessCallback',
-                  'saveProviderTypeToLocalStorage',
-                ],
-              },
-            ],
-            onError: {
-              target: 'Disconnected',
             },
           },
         },
         Connected: {
+          tags: ['connected'],
           // This ensure that XState has settled on this state, this fixes
           // a race condition when trying to read the connector when
           // recieving the connected event.
@@ -184,7 +199,7 @@ export function makeWalletMachine<Id extends string>(
           },
           on: {
             CONNECT: {
-              target: 'Connecting',
+              target: 'Disconnected.Connecting',
             },
             DISCONNECT: {
               target: 'Disconnected',
@@ -261,16 +276,44 @@ export function makeWalletMachine<Id extends string>(
         disconnect: (c, _) => {
           c.connector?.disconnect()
         },
+        emitInitializedConnectedEvent: (c, _) => {
+          const state: LotwInitializedState = {
+            status: 'connected',
+            accounts: c.accounts,
+            chain: c.chainId!,
+          }
+
+          console.info('[lotw] initialized:', state)
+
+          c.emitter.emit('initialized', state)
+        },
+        emitInitializedDisconnectedEvent: (c, _) => {
+          const state: LotwInitializedState = {
+            status: 'disconnected',
+          }
+
+          console.info('[lotw] initialized:', state)
+
+          c.emitter.emit('initialized', state)
+        },
         emitConnectedEvent: (c, _) => {
+          console.info('[lotw] connected:', c.accounts, c.chainId)
+
           c.emitter.emit('connected', c.accounts, c.chainId)
         },
         emitDisconnectedEvent: (c, _) => {
+          console.info('[lotw] disconnected')
+
           c.emitter.emit('disconnected')
         },
         emitAccountsChangedEvent: (c, _) => {
+          console.info('[lotw] accountsChanged:', c.accounts)
+
           c.emitter.emit('accountsChanged', c.accounts)
         },
         emitChainChangedEvent: (c, _) => {
+          console.info('[lotw] chainChanged:', c.chainId)
+
           c.emitter.emit('chainChanged', c.chainId)
         },
       },
@@ -356,8 +399,6 @@ export function makeWalletMachine<Id extends string>(
           c.connector?.on('chainChanged', (rawChainId) => {
             const chainId = chainIdFromChainInfo(rawChainId)
 
-            console.info('[lotw] chainChanged:', chainId)
-
             send({
               type: 'CHANGE_CHAIN',
               data: { chainId },
@@ -367,8 +408,6 @@ export function makeWalletMachine<Id extends string>(
             const accounts = rawAccounts.map((account) =>
               getChecksumAddress(account)
             )
-
-            console.info('[lotw] accountsChanged:', accounts)
 
             if (rawAccounts.length) {
               send({ type: 'CHANGE_ACCOUNTS', data: { accounts } })
