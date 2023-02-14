@@ -1,5 +1,15 @@
 # lotw
 
+## 3.0.0
+
+### Major Changes
+
+- [`71e2fc5`](https://github.com/nextchapterstudio/lotw/commit/71e2fc5b20b5830119ae676d65febcc38629521b) Thanks [@nobrayner](https://github.com/nobrayner)! - Added tags to states for better querying of current state. Rearranged states to better represent what is happening.
+
+### Patch Changes
+
+- [`71e2fc5`](https://github.com/nextchapterstudio/lotw/commit/71e2fc5b20b5830119ae676d65febcc38629521b) Thanks [@nobrayner](https://github.com/nobrayner)! - Added an initialization event that reports the state LOTW has settled on. This allows for waiting for LOTW to start and knowing if it is connected or disconnected.
+
 ## 2.0.2
 
 ### Patch Changes
