@@ -189,10 +189,7 @@ export function makeWalletMachine<Id extends string>(
         },
         Connected: {
           tags: ['connected'],
-          // This ensure that XState has settled on this state, this fixes
-          // a race condition when trying to read the connector when
-          // recieving the connected event.
-          after: { 1: { actions: ['emitConnectedEvent'] } },
+          entry: ['emitConnectedEvent'],
           invoke: {
             id: 'handleChainOrAccountChange',
             src: 'handleChainOrAccountChange',
@@ -276,6 +273,9 @@ export function makeWalletMachine<Id extends string>(
         disconnect: (c, _) => {
           c.connector?.disconnect()
         },
+        // Emit events after timeout to give time for xstate to update
+        // the current context, as it does not update it as it exectus
+        // actions
         emitInitializedConnectedEvent: (c, _) => {
           const state: LotwInitializedState = {
             status: 'connected',
@@ -285,7 +285,9 @@ export function makeWalletMachine<Id extends string>(
 
           console.info('[lotw] initialized:', state)
 
-          c.emitter.emit('initialized', state)
+          setTimeout(() => {
+            c.emitter.emit('initialized', state)
+          }, 1)
         },
         emitInitializedDisconnectedEvent: (c, _) => {
           const state: LotwInitializedState = {
@@ -294,27 +296,37 @@ export function makeWalletMachine<Id extends string>(
 
           console.info('[lotw] initialized:', state)
 
-          c.emitter.emit('initialized', state)
+          setTimeout(() => {
+            c.emitter.emit('initialized', state)
+          }, 1)
         },
         emitConnectedEvent: (c, _) => {
           console.info('[lotw] connected:', c.accounts, c.chainId)
 
-          c.emitter.emit('connected', c.accounts, c.chainId)
+          setTimeout(() => {
+            c.emitter.emit('connected', c.accounts, c.chainId)
+          }, 1)
         },
         emitDisconnectedEvent: (c, _) => {
           console.info('[lotw] disconnected')
 
-          c.emitter.emit('disconnected')
+          setTimeout(() => {
+            c.emitter.emit('disconnected')
+          }, 1)
         },
         emitAccountsChangedEvent: (c, _) => {
           console.info('[lotw] accountsChanged:', c.accounts)
 
-          c.emitter.emit('accountsChanged', c.accounts)
+          setTimeout(() => {
+            c.emitter.emit('accountsChanged', c.accounts)
+          }, 1)
         },
         emitChainChangedEvent: (c, _) => {
           console.info('[lotw] chainChanged:', c.chainId)
 
-          c.emitter.emit('chainChanged', c.chainId)
+          setTimeout(() => {
+            c.emitter.emit('chainChanged', c.chainId)
+          }, 1)
         },
       },
       guards: {
