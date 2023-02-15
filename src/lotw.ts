@@ -47,16 +47,6 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
     const next =
       typeof nextOrObserver === 'object' ? nextOrObserver.next : nextOrObserver
 
-    if (this._walletActor.state.hasTag('connected')) {
-      next({
-        type: 'LOTW_CONNECTED',
-        accounts: this._walletActor.state.context.accounts,
-        chain: this._walletActor.state.context.chainId!,
-      })
-    } else {
-      next({ type: 'LOTW_DISCONNECTED' })
-    }
-
     const connectedCallback = (accounts: string[], chain: string) =>
       next({ type: 'LOTW_CONNECTED', accounts, chain })
     const disconnectedCallback = () => next({ type: 'LOTW_DISCONNECTED' })
@@ -88,7 +78,9 @@ export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
    * Whether the current state is, or is a child of, the given state value
    */
   // FIXME: Better type
-  is(tag: Parameters<typeof this._walletActor['state']['hasTag']>[0]): boolean {
+  is(
+    tag: Parameters<(typeof this._walletActor)['state']['hasTag']>[0]
+  ): boolean {
     return this._walletActor.state.hasTag(tag)
   }
 
