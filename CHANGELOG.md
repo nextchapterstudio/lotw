@@ -1,5 +1,11 @@
 # lotw
 
+## 3.0.2
+
+### Patch Changes
+
+- [`c46d590`](https://github.com/nextchapterstudio/lotw/commit/c46d5907d8d793b735bad8ef1abbbfa6c6cf4f9c) Thanks [@nobrayner](https://github.com/nobrayner)! - All emitted events are now delayed by a millisecond to allow the machine's context to settle after executing actions. This resolves issues with trying to access accounts or chain from lotw upon receiving an event.
+
 ## 3.0.1
 
 ### Patch Changes
