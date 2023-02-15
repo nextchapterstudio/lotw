@@ -1,5 +1,11 @@
 # lotw
 
+## 3.0.1
+
+### Patch Changes
+
+- [`bb9afea`](https://github.com/nextchapterstudio/lotw/commit/bb9afea085d7457220e8d3df178b573e22c69191) Thanks [@nobrayner](https://github.com/nobrayner)! - Removes the first next call when subscribing to lotw events, as it isn't inline with expectations
+
 ## 3.0.0
 
 ### Major Changes
