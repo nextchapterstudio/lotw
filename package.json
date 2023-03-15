@@ -40,6 +40,11 @@
       "module": "./lib/connectors/wallet-connect.mjs",
       "default": "./lib/connectors/wallet-connect.js",
       "types": "./lib/connectors/wallet-connect.d.ts"
+    },
+    "./connectors/wallet-connect2": {
+      "module": "./lib/connectors/wallet-connect2.mjs",
+      "default": "./lib/connectors/wallet-connect2.js",
+      "types": "./lib/connectors/wallet-connect2.d.ts"
     }
   },
   "keywords": [
