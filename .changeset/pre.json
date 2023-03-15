@@ -4,5 +4,8 @@
   "initialVersions": {
     "lotw": "3.0.2"
   },
-  "changesets": []
+  "changesets": [
+    "red-masks-end",
+    "violet-spies-hear"
+  ]
 }

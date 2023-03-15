@@ -1,5 +1,15 @@
 # lotw
 
+## 4.0.0-next.0
+
+### Major Changes
+
+- [`2a26669`](https://github.com/nextchapterstudio/lotw/commit/2a26669fec6024f86a50fa693f84304380803ef6) Thanks [@nobrayner](https://github.com/nobrayner)! - Refactor lotw to be much smaller
+
+### Minor Changes
+
+- [`ef2a3c8`](https://github.com/nextchapterstudio/lotw/commit/ef2a3c82e33ea1fd3621f7dec669c00b1c8c8311) Thanks [@nobrayner](https://github.com/nobrayner)! - Adds a WalletConnect 2 connector
+
 ## 3.0.2
 
 ### Patch Changes
