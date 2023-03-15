@@ -27,6 +27,13 @@ export function createHooksFrom<ConnectorId extends string>(
       () => null
     )
 
+  const useSigner = () =>
+    useSyncExternalStore(
+      pocket.subscribe,
+      () => pocket.signer(),
+      () => null
+    )
+
   const useConnectorId = () =>
     useSyncExternalStore(
       pocket.subscribe,
@@ -54,6 +61,7 @@ export function createHooksFrom<ConnectorId extends string>(
     useSwitchNetwork,
     usePocketState,
     useProvider,
+    useSigner,
     useConnectorId,
     useChainId,
     useAccounts,
