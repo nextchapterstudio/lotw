@@ -1,5 +1,11 @@
 # lotw
 
+## 4.0.0-next.1
+
+### Patch Changes
+
+- I suck at NPM. Package now built
+
 ## 4.0.0-next.0
 
 ### Major Changes
