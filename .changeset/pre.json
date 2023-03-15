@@ -5,6 +5,7 @@
     "lotw": "3.0.2"
   },
   "changesets": [
+    "itchy-birds-promise",
     "long-ties-tap",
     "red-masks-end",
     "violet-spies-hear"

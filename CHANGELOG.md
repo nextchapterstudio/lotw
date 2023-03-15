@@ -1,5 +1,11 @@
 # lotw
 
+## 4.0.0-next.2
+
+### Minor Changes
+
+- [`497c085`](https://github.com/nextchapterstudio/lotw/commit/497c0856e8e385e658edb9eb3d5803d1d4d24507) Thanks [@nobrayner](https://github.com/nobrayner)! - lotw/react - useSigner hook
+
 ## 4.0.0-next.1
 
 ### Patch Changes
