@@ -1,5 +1,11 @@
 # lotw
 
+## 4.0.0-next.3
+
+### Patch Changes
+
+- [`4a958cd`](https://github.com/nextchapterstudio/lotw/commit/4a958cd16705b96db2517db15f8e75654e250a6d) Thanks [@nobrayner](https://github.com/nobrayner)! - Missing build...
+
 ## 4.0.0-next.2
 
 ### Minor Changes
