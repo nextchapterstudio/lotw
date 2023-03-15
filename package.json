@@ -59,39 +59,28 @@
   "license": "MIT",
   "scripts": {
     "test": "echo 'No tests yet'",
-    "build": "yarn xstate:typegen && tsup",
+    "build": "tsup",
     "format": "prettier --write \"src/**/*.ts\"",
-    "xstate:typegen": "xstate typegen \"./src/**/*.ts\"",
     "changeset": "changeset",
     "release": "yarn build && yarn changeset publish",
     "version": "changeset version"
   },
   "dependencies": {
-    "tiny-emitter": "^2.1.0"
+    "@walletconnect/ethereum-provider": "^2.4.10",
+    "@walletconnect/web3-provider": "^1.8.0",
+    "ethers": "^6.0.0"
   },
   "peerDependencies": {
-    "@walletconnect/web3-provider": "^1.8.0",
-    "@xstate/react": "^3.0.0",
-    "ethers": "^5.0.0",
-    "xstate": "^4.30.0"
-  },
-  "peerDependenciesMeta": {
-    "@walletconnect/web3-provider": {
-      "optional": true
-    }
+    "react": "^18.0.0"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.6",
     "@changesets/cli": "^2.24.4",
     "@types/node": "^18.7.14",
-    "@walletconnect/types": "^1.8.0",
-    "@walletconnect/web3-provider": "^1.8.0",
-    "@xstate/cli": "^0.3.2",
-    "@xstate/react": "^3.0.0",
-    "ethers": "^5.7.0",
+    "@types/react": "^18.0.28",
     "prettier": "^2.7.1",
+    "react": "^18.2.0",
     "tsup": "^6.2.3",
-    "typescript": "^4.8.2",
-    "xstate": "^4.30.0"
+    "typescript": "^4.8.2"
   }
 }

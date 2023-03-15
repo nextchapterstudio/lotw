@@ -1,205 +1,385 @@
-import type {
-  ChainInfo,
-  LotwConnector,
-  LotwEvent,
-  LotwInitializedState,
-} from './types'
+import type { BrowserProvider, Signer } from 'ethers'
 
-import {
-  interpret,
-  type Observer,
-  type Subscription,
-  type InterpreterFrom,
-  type Subscribable,
-} from 'xstate'
+import { getAddress as getChecksumAddress } from 'ethers'
 
-import { makeWalletMachine } from './wallet.machine'
+import type { ChainInfo, Connection, LotwConnector } from './types'
 
-export class Lotw<Id extends string> implements Subscribable<LotwEvent> {
-  private _walletActor: InterpreterFrom<
-    ReturnType<typeof makeWalletMachine<Id>>
-  >
+import { LotwError } from './lotw-error'
+import { chainIdFromChainInfo } from './helpers'
 
+export type InferConnectorIds<T extends LotwPocket<string>> =
+  T extends LotwPocket<infer Id> ? Id : never
+
+export type LotwPocketOptions = {
   /**
-   * The currently connected accounts (addresses), or null if no wallet is connected
+   * One of:
+   * - Chain id as hex (`'0x1'`)
+   * - Chain id as decimal (`1`)
+   * - ChainData object
    */
-  get accounts() {
-    return this._walletActor.getSnapshot().context.accounts
+  chain?: ChainInfo
+}
+
+export type LotwEvent<ConnectorId extends string> =
+  | Initiailizing
+  | Disconnected
+  | Connecting
+  | Omit<Connected<ConnectorId>, 'connector'>
+  | Omit<Switching<ConnectorId>, 'connector'>
+
+export type LotwPocketListener<ConnectorId extends string> = (
+  event: LotwEvent<ConnectorId>
+) => void
+
+type LotwPocketState<ConnectorId extends string> =
+  | Initiailizing
+  | Disconnected
+  | Connecting
+  | Connected<ConnectorId>
+  | Switching<ConnectorId>
+
+type Initiailizing = { status: 'initializing' }
+type Disconnected = { status: 'disconnected' }
+type Connecting = { status: 'connecting' }
+type Connected<ConnectorId extends string> = {
+  status: 'connected'
+  connector: LotwConnector<ConnectorId>
+  provider: BrowserProvider
+  signer: Signer
+  unsubscribe: () => void
+  data: Connection['data']
+}
+type Switching<ConnectorId extends string> = {
+  status: 'switching'
+  connector: LotwConnector<ConnectorId>
+  provider: BrowserProvider
+  signer: Signer
+  unsubscribe: () => void
+  data: Connection['data']
+}
+
+export class LotwPocket<ConnectorId extends string> {
+  #LOTW_CONNECTOR_KEY = 'lotw::connector'
+
+  #connectors: Map<ConnectorId, LotwConnector<ConnectorId>>
+  #options: LotwPocketOptions
+  #listeners: LotwPocketListener<ConnectorId>[]
+
+  #connectionState: LotwPocketState<ConnectorId>
+
+  constructor(
+    connectors: LotwConnector<ConnectorId>[],
+    options?: LotwPocketOptions
+  ) {
+    this.#connectors = connectors.reduce((map, connector) => {
+      map.set(connector.id(), connector)
+      return map
+    }, new Map())
+
+    this.#options = options ?? {}
+    this.#listeners = []
+    this.#connectionState = { status: 'initializing' }
+
+    if (typeof window !== 'undefined') {
+      this.#init()
+    }
   }
 
-  /**
-   * The currently connect chain's id in hex, or null if no wallet is connected
-   */
-  get chainId() {
-    return this._walletActor.getSnapshot().context.chainId
+  async connectWith(
+    connectorId: ConnectorId,
+    chain?: ChainInfo
+  ): Promise<void> {
+    if (
+      this.#connectionState.status !== 'connected' &&
+      this.#connectionState.status !== 'disconnected'
+    ) {
+      return
+    }
+
+    const connector = this.#connectors.get(connectorId)
+
+    if (!connector) {
+      throw new LotwError({
+        code: 'CONNECTOR_NOT_REGISTERED',
+        message: `No connector registered with id '${connectorId}'`,
+      })
+    }
+
+    const previousState = this.#connectionState
+
+    if (previousState.status === 'connected') {
+      this.#setConnectionState({
+        ...previousState,
+        status: 'switching',
+      })
+    } else {
+      this.#setConnectionState({ status: 'connecting' })
+    }
+
+    try {
+      const connection = await connector.connect(chain ?? this.#options.chain)
+
+      if (this.#connectionState) {
+        this.disconnect()
+      }
+
+      localStorage.setItem(this.#LOTW_CONNECTOR_KEY, connector.id())
+
+      this.#setConnectionState({
+        status: 'connected',
+        connector: connector,
+        provider: connection.provider,
+        signer: await connection.provider.getSigner(),
+        unsubscribe: this.#subscribe(connector),
+        data: connection.data,
+      })
+    } catch (err: any) {
+      if (
+        (err?.code === 4001 && typeof err?.message === 'string') ||
+        err?.message === 'User closed modal'
+      ) {
+        const error = new LotwError({ code: 'USER_REJECTED', cause: err })
+
+        throw error
+      }
+
+      const error = new LotwError({
+        code: 'CONNECTOR_ERROR',
+        cause: err,
+      })
+
+      this.#setConnectionState(previousState)
+
+      throw error
+    }
   }
 
-  constructor(connectors: LotwConnector<Id>[], _options?: {}) {
-    this._walletActor = interpret(makeWalletMachine(connectors)).start()
+  disconnect(): void {
+    if (this.#connectionState.status !== 'connected') {
+      return
+    }
+
+    localStorage.removeItem(this.#LOTW_CONNECTOR_KEY)
+
+    this.#connectionState.unsubscribe()
+    this.#connectionState.connector.disconnect()
+
+    this.#setConnectionState({ status: 'disconnected' })
   }
 
-  /**
-   * Lotw instance as an observable
-   */
-  subscribe(
-    nextOrObserver: Observer<LotwEvent> | ((value: LotwEvent) => void)
-  ): Subscription {
-    const next =
-      typeof nextOrObserver === 'object' ? nextOrObserver.next : nextOrObserver
+  async switchNetwork(chain: ChainInfo): Promise<void> {
+    if (this.#connectionState.status !== 'connected') {
+      return
+    }
 
-    const connectedCallback = (accounts: string[], chain: string) =>
-      next({ type: 'LOTW_CONNECTED', accounts, chain })
-    const disconnectedCallback = () => next({ type: 'LOTW_DISCONNECTED' })
-    const accountsChangedCallback = (accounts: string[]) =>
-      next({ type: 'LOTW_ACCOUNTS_CHANGED', accounts })
-    const chainChangedCallback = (chain: string) =>
-      next({ type: 'LOTW_CHAIN_CHANGED', chain })
+    try {
+      const connector = this.#connectionState!.connector
 
-    this.once('initialized', (state: LotwInitializedState) =>
-      next({ type: 'LOTW_INITIALIZED', state })
-    )
+      await connector.connect(chain)
 
-    this.on('connected', connectedCallback)
-    this.on('disconnected', disconnectedCallback)
-    this.on('accountsChanged', accountsChangedCallback)
-    this.on('chainChanged', chainChangedCallback)
-
-    return {
-      unsubscribe: () => {
-        this.off('connected', connectedCallback)
-        this.off('disconnected', disconnectedCallback)
-        this.off('accountsChanged', accountsChangedCallback)
-        this.off('chainChanged', chainChangedCallback)
-      },
+      await new Promise<void>((resolve, _) => {
+        connector.once('connect', () => {
+          resolve()
+        })
+      })
+    } catch (err) {
+      throw new LotwError({ code: 'CONNECTOR_ERROR', cause: err })
     }
   }
 
   /**
-   * Whether the current state is, or is a child of, the given state value
-   */
-  // FIXME: Better type
-  is(
-    tag: Parameters<(typeof this._walletActor)['state']['hasTag']>[0]
-  ): boolean {
-    return this._walletActor.state.hasTag(tag)
-  }
-
-  /**
-   * Attempts to connect to the given wallet, rejecting if an error occurs or a user rejects
    *
-   * @param connectorId - The connector id to be used when attempting to connect
-   * @param chainInfo - Optional chain info to automatically switch networks as part connecting
-   */
-  connectWallet(connectorId: Id, chainInfo?: ChainInfo) {
-    return new Promise<void>((resolve, reject) => {
-      this._walletActor.send({
-        type: 'CONNECT',
-        connector: connectorId,
-        chain: chainInfo,
-        successCallback: resolve,
-        failureCallback: reject,
-      })
-    })
-  }
-
-  /**
-   * Disconnects from the current wallet
-   */
-  disconnectWallet() {
-    this._walletActor.send({ type: 'DISCONNECT' })
-  }
-
-  /**
-   * Requests the wallet to switch to the given network chain info
-   * @param chainInfo - The chain info to switch to
-   */
-  switchNetwork(chainInfo: ChainInfo) {
-    return new Promise<void>((resolve, reject) => {
-      this._walletActor.send({
-        type: 'SWITCH_NETWORK',
-        chain: chainInfo,
-        successCallback: resolve,
-        failureCallback: reject,
-      })
-    })
-  }
-
-  /**
-   * Returns the current connector instance, or null if no wallet is connected
-   */
-  getConnector() {
-    return this._walletActor.state.context.connector
-  }
-
-  /*
-   * Returns the current connector id, or null if no wallet is connected
-   */
-  getConnectorId() {
-    return this.getConnector()?.id() ?? null
-  }
-
-  /**
-   * Returns the current provider instance, or null if no wallet is connected
-   */
-  getProvider() {
-    return this.getConnector()?.getProvider() ?? null
-  }
-
-  private get _emitter() {
-    return this._walletActor.state.context.emitter
-  }
-
-  on(
-    event: 'initialized',
-    callback: (state: LotwInitializedState) => void
-  ): void
-  on(
-    event: 'connected',
-    callback: (accounts: string[], chainId: string) => void
-  ): void
-  on(event: 'disconnected', callback: () => void): void
-  on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
-  on(event: 'chainChanged', callback: (chainId: string) => void): void
-  on(event: string, callback: (...args: any[]) => void) {
-    this._emitter.on(event, callback)
-  }
-
-  once(
-    event: 'initialized',
-    callback: (state: LotwInitializedState) => void
-  ): void
-  once(
-    event: 'connected',
-    callback: (accounts: string[], chainId: string) => void
-  ): void
-  once(event: 'disconnected', callback: () => void): void
-  once(event: 'accountsChanged', callback: (accounts: string[]) => void): void
-  once(event: 'chainChanged', callback: (chainId: string) => void): void
-  once(event: string, callback: (...args: any[]) => void) {
-    this._emitter.once(event, callback)
-  }
-
-  off(
-    event: 'initialized',
-    callback: (state: LotwInitializedState) => void
-  ): void
-  off(
-    event: 'connected',
-    callback: (accounts: string[], chainId: string) => void
-  ): void
-  off(event: 'disconnected', callback: () => void): void
-  off(event: 'accountsChanged', callback: (accounts: string[]) => void): void
-  off(event: 'chainChanged', callback: (chainId: string) => void): void
-  off(event: string, callback: (...args: any[]) => void) {
-    this._emitter.off(event, callback)
-  }
-
-  /**
-   * Internal use only / Escape hatch if needed
+   * The current status.
    *
-   * Returns the wrapped xstate interpreter
+   * Status changes as follows:
+   * ```
+   * +--------------+  init   +--------------+
+   * | Initializing | ------> | Disconnected |<-
+   * +--------------+         +--------------+  \
+   *       |      disconnect  ^     |            |
+   *  init |  /--------------/      | connect    |
+   *       v  |                     v            | cancel
+   * +-------------+   connected  +------------+ |
+   * |  Connected  | <----------- | Connecting |-/
+   * +-------------+              +------------+
+   *          |  ^
+   *  connect |   \
+   *          v    | connected/cancel
+   * +-----------+ |
+   * | Switching |-/
+   * +-----------+
+   * ```
    */
-  getWalletActor() {
-    return this._walletActor
+  status(): LotwPocketState<ConnectorId>['status'] {
+    return this.#connectionState.status
+  }
+
+  /**
+   *
+   * Returns the current browser provider. Returns `null` if status is not `connected`.
+   */
+  provider(): BrowserProvider | null {
+    if (this.#connectionState.status === 'connected') {
+      return this.#connectionState.provider
+    }
+
+    return null
+  }
+
+  signer(): Signer | null {
+    if (this.#connectionState.status === 'connected') {
+      return this.#connectionState.signer
+    }
+
+    return null
+  }
+
+  /**
+   *
+   * The ID of the current connector. Returns `null` if status is not `connected`.
+   */
+  connectorId(): ConnectorId | null {
+    if (
+      this.#connectionState.status === 'connected' ||
+      this.#connectionState.status === 'switching'
+    ) {
+      return this.#connectionState.connector.id()
+    }
+
+    return null
+  }
+
+  /**
+   *
+   * The current accounts. Returns `[]` if status is not `connected`.
+   */
+  accounts(): string[] {
+    if (
+      this.#connectionState.status === 'connected' ||
+      this.#connectionState.status === 'switching'
+    ) {
+      return this.#connectionState.data.accounts
+    }
+
+    return []
+  }
+
+  /**
+   *
+   * The current chain ID. Returns `null` if status is not `connected`.
+   */
+  chainId(): string | null {
+    if (
+      this.#connectionState.status === 'connected' ||
+      this.#connectionState.status === 'switching'
+    ) {
+      return this.#connectionState.data.chainId
+    }
+
+    return null
+  }
+
+  /**
+   *
+   * Subscribe to connection state changes.
+   */
+  subscribe(listener: LotwPocketListener<ConnectorId>): () => void {
+    this.#listeners.push(listener)
+
+    return () => {
+      this.#listeners = this.#listeners.filter((l) => l !== listener)
+    }
+  }
+
+  async #init() {
+    const connectorId = localStorage.getItem(
+      this.#LOTW_CONNECTOR_KEY
+    ) as ConnectorId | null
+
+    if (!connectorId) {
+      console.error(
+        new LotwError({
+          code: 'CONNECTOR_NOT_REGISTERED',
+          message: `No connector registered with id '${connectorId}'`,
+        })
+      )
+    }
+
+    // Cast to ConnectorId so TS is happy
+    // We handle the null case because there is no connector associated to null
+    const connector = this.#connectors.get(connectorId as ConnectorId)
+
+    if (!connector) {
+      this.#setConnectionState({ status: 'disconnected' })
+
+      return
+    }
+
+    try {
+      const connection = await connector.reconnect()
+
+      this.#setConnectionState({
+        status: 'connected',
+        connector,
+        provider: connection.provider,
+        signer: await connection.provider.getSigner(),
+        unsubscribe: this.#subscribe(connector),
+        data: connection.data,
+      })
+    } catch {
+      this.#setConnectionState({ status: 'disconnected' })
+    }
+  }
+
+  #subscribe(connector: LotwConnector<ConnectorId>) {
+    const chainChanged = async (rawChainId: string) => {
+      if (this.#connectionState.status === 'connected') {
+        this.#setConnectionState({
+          ...this.#connectionState,
+          data: {
+            accounts: this.#connectionState.data.accounts,
+            chainId: chainIdFromChainInfo(rawChainId),
+          },
+        })
+      }
+    }
+    const accountsChanged = async (rawAccounts: string[]) => {
+      if (rawAccounts.length === 0) {
+        this.disconnect()
+        return
+      }
+
+      if (this.#connectionState.status === 'connected') {
+        this.#setConnectionState({
+          ...this.#connectionState,
+          signer: await this.#connectionState.provider.getSigner(),
+          data: {
+            chainId: this.#connectionState.data.chainId,
+            accounts: rawAccounts.map((account) => getChecksumAddress(account)),
+          },
+        })
+      }
+    }
+
+    connector.on('chainChanged', chainChanged)
+    connector.on('accountsChanged', accountsChanged)
+
+    return () => {
+      connector.off('chainChanged', chainChanged)
+      connector.off('accountsChanged', accountsChanged)
+    }
+  }
+
+  #emit(event: LotwEvent<ConnectorId>) {
+    console.info('[lotw]', event.status, event)
+
+    for (const listener of this.#listeners) {
+      listener(Object.assign({}, event))
+    }
+  }
+
+  #setConnectionState(newState: LotwPocketState<ConnectorId>) {
+    this.#connectionState = newState
+    this.#emit(newState)
   }
 }

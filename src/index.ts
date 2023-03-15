@@ -1,12 +1,10 @@
 export { isLotwError } from './lotw-error'
-export { Lotw } from './lotw'
+export { LotwPocket } from './lotw'
 
 export type {
   InferConnectorIds,
-  LotwConnector,
-  LotwConnectorOptions,
+  LotwPocketOptions,
+  LotwPocketListener,
   LotwEvent,
-  LotwInitializedState,
-  ChainData,
-  ChainInfo,
-} from './types'
+} from './lotw'
+export type { LotwConnector, ChainData, ChainInfo } from './types'

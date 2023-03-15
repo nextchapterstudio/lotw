@@ -1,8 +1,4 @@
-import type {
-  LotwConnectorOptions,
-  InjectedProvider,
-  InjectedWalletProvider,
-} from '../types'
+import type { InjectedProvider, InjectedWalletProvider } from '../types'
 
 import { BaseInjectedConnector } from './injected'
 
@@ -18,8 +14,8 @@ const COINBASE_CONNECTOR_ID = 'Coinbase'
 export class CoinbaseConnector extends BaseInjectedConnector<
   typeof COINBASE_CONNECTOR_ID
 > {
-  constructor(options?: LotwConnectorOptions) {
-    super(COINBASE_CONNECTOR_ID, options)
+  constructor() {
+    super(COINBASE_CONNECTOR_ID)
   }
 
   protected override getEthereumObject(): InjectedWalletProvider {

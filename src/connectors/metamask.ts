@@ -1,8 +1,4 @@
-import type {
-  InjectedProvider,
-  InjectedWalletProvider,
-  LotwConnectorOptions,
-} from '../types'
+import type { InjectedProvider, InjectedWalletProvider } from '../types'
 
 import { BaseInjectedConnector } from './injected'
 
@@ -23,8 +19,8 @@ const METAMASK_CONNECTOR_ID = 'MetaMask'
 export class MetaMaskConnector extends BaseInjectedConnector<
   typeof METAMASK_CONNECTOR_ID
 > {
-  constructor(options?: LotwConnectorOptions) {
-    super(METAMASK_CONNECTOR_ID, options)
+  constructor() {
+    super(METAMASK_CONNECTOR_ID)
   }
 
   protected override getEthereumObject(): InjectedWalletProvider {

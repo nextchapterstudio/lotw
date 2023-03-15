@@ -1,23 +1,23 @@
+import { BrowserProvider } from 'ethers'
+
 import type {
   ChainInfo,
-  ConnectionData,
-  LotwConnectorOptions,
+  Connection,
   InjectedWalletProvider,
   LotwConnector,
 } from '../types'
 
-import { Web3Provider, chainIdFromChainInfo } from '../helpers'
+import { chainIdFromChainInfo } from '../helpers'
+import { LotwError } from '../lotw-error'
 
 export class BaseInjectedConnector<Id extends string>
   implements LotwConnector<Id>
 {
-  chainInfo?: ChainInfo
-  provider: Web3Provider | null = null
+  provider: BrowserProvider | null = null
   _id: Id
 
-  constructor(id: Id, options?: LotwConnectorOptions) {
+  constructor(id: Id) {
     this._id = id
-    this.chainInfo = options?.chainInfo
   }
 
   id(): Id {
@@ -34,54 +34,77 @@ export class BaseInjectedConnector<Id extends string>
     return ethereum
   }
 
-  getProvider(): Web3Provider {
+  getProvider(): BrowserProvider {
     if (this.provider) return this.provider
 
     let ethereum = this.getEthereumObject()
 
-    return (this.provider = new Web3Provider(ethereum))
+    return (this.provider = new BrowserProvider(ethereum))
   }
 
-  async connect(chainInfo?: ChainInfo | undefined): Promise<ConnectionData> {
+  async connect(targetChainInfo?: ChainInfo): Promise<Connection> {
     const provider = this.getProvider()
 
-    const [accounts, chainId]: [string[], string] = await Promise.all([
-      provider.send('eth_requestAccounts', []),
-      provider.send('eth_chainId', []),
-    ])
-
-    const targetChainInfo = chainInfo ?? this.chainInfo
-    const desiredChainId = targetChainInfo
-      ? chainIdFromChainInfo(targetChainInfo)
-      : undefined
-
-    if (!desiredChainId || chainId === desiredChainId) {
-      return {
-        accounts,
-        chainId,
-      }
-    }
-
     try {
-      await provider.send('wallet_switchEthereumChain', [
-        { chainId: desiredChainId },
+      const [accounts, chainId]: [string[], string] = await Promise.all([
+        provider.send('eth_requestAccounts', []),
+        provider.send('eth_chainId', []),
       ])
-    } catch (error: any) {
-      if (
-        (error.code === 4902 || error.data?.originalError?.code === 4902) &&
-        typeof targetChainInfo === 'object'
-      ) {
-        await provider.send('wallet_addEthereumChain', [targetChainInfo])
-      }
-    }
 
-    return {
-      accounts,
-      chainId: desiredChainId,
+      const desiredChainId = targetChainInfo
+        ? chainIdFromChainInfo(targetChainInfo)
+        : undefined
+
+      if (!desiredChainId || chainId === desiredChainId) {
+        return {
+          data: {
+            accounts,
+            chainId,
+          },
+          provider,
+        }
+      }
+
+      try {
+        await provider.send('wallet_switchEthereumChain', [
+          { chainId: desiredChainId },
+        ])
+      } catch (error: any) {
+        if (
+          (error.code === 4902 || error.data?.originalError?.code === 4902) &&
+          typeof targetChainInfo === 'object'
+        ) {
+          await provider.send('wallet_addEthereumChain', [targetChainInfo])
+        }
+      }
+
+      return {
+        data: {
+          accounts,
+          chainId: desiredChainId,
+        },
+        provider,
+      }
+    } catch (err: any) {
+      if (
+        (err?.code === 4001 && typeof err?.message === 'string') ||
+        err?.message === 'User closed modal'
+      ) {
+        const error = new LotwError({ code: 'USER_REJECTED', cause: err })
+
+        throw error
+      }
+
+      const error = new LotwError({
+        code: 'CONNECTOR_ERROR',
+        cause: err,
+      })
+
+      throw error
     }
   }
 
-  async reconnect(): Promise<ConnectionData> {
+  async reconnect(): Promise<Connection> {
     const provider = this.getProvider()
 
     const [accounts, chainId] = await Promise.all([
@@ -89,7 +112,13 @@ export class BaseInjectedConnector<Id extends string>
       provider.send('eth_chainId', []),
     ])
 
-    return { accounts, chainId }
+    return {
+      data: {
+        accounts,
+        chainId,
+      },
+      provider,
+    }
   }
 
   disconnect(): void {}
@@ -101,10 +130,9 @@ export class BaseInjectedConnector<Id extends string>
     event: 'connect',
     callback: (connectInfo: { chainId: string }) => void
   ): void
-  on(event: unknown, callback: unknown): void {
+  on(event: string, callback: (...args: any[]) => void): void {
     const provider = this.getProvider()
 
-    // @ts-expect-error
     provider?.provider.on(event, callback)
   }
 
@@ -115,10 +143,9 @@ export class BaseInjectedConnector<Id extends string>
     event: 'connect',
     callback: (connectInfo: { chainId: string }) => void
   ): void
-  off(event: unknown, callback: unknown): void {
+  off(event: string, callback: (...args: any[]) => void): void {
     const provider = this.getProvider()
 
-    // @ts-expect-error
     provider?.provider.off(event, callback)
   }
 
@@ -129,10 +156,9 @@ export class BaseInjectedConnector<Id extends string>
     event: 'connect',
     callback: (connectInfo: { chainId: string }) => void
   ): void
-  once(event: unknown, callback: unknown): void {
+  once(event: string, callback: (...args: any[]) => void): void {
     const provider = this.getProvider()
 
-    // @ts-expect-error
     provider?.provider.once(event, callback)
   }
 }
@@ -141,7 +167,7 @@ const INJECTED_CONNECTOR_ID = 'Injected'
 export class InjectedConnector extends BaseInjectedConnector<
   typeof INJECTED_CONNECTOR_ID
 > {
-  constructor(options?: LotwConnectorOptions) {
-    super(INJECTED_CONNECTOR_ID, options)
+  constructor() {
+    super(INJECTED_CONNECTOR_ID)
   }
 }

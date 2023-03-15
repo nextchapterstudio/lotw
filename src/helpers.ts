@@ -1,9 +1,5 @@
 import type { ChainInfo } from './types'
 
-import { providers } from 'ethers'
-
-export class Web3Provider extends providers.Web3Provider {}
-
 function assertNever(value: never, message?: string) {
   throw new Error(message ?? `Unexpect value when never was expected: ${value}`)
 }

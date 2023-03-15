@@ -1,21 +1,18 @@
-import type {
-  ChainInfo,
-  LotwConnectorOptions,
-  ConnectionData,
-  LotwConnector,
-} from '../types'
-import type { IWalletConnectProviderOptions } from '@walletconnect/types'
-
+import { BrowserProvider } from 'ethers'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 
-import { Web3Provider, chainIdFromChainInfo } from '../helpers'
+import type { ChainInfo, Connection, LotwConnector } from '../types'
 
-type WalletConnectOptions = IWalletConnectProviderOptions & LotwConnectorOptions
+import { chainIdFromChainInfo } from '../helpers'
+
+type WalletConnectOptions = ConstructorParameters<
+  typeof WalletConnectProvider
+>[0]
 
 export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
   options: WalletConnectOptions
   wcProvider: WalletConnectProvider | null = null
-  provider: Web3Provider | null = null
+  provider: BrowserProvider | null = null
 
   constructor(options: WalletConnectOptions) {
     this.options = options
@@ -29,19 +26,19 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     return (this.wcProvider = new WalletConnectProvider(this.options))
   }
 
-  getProvider(): Web3Provider {
+  getProvider(): BrowserProvider {
     if (this.provider) {
       return this.provider
     }
 
-    return (this.provider = new Web3Provider(this._getWCProvider()))
+    return (this.provider = new BrowserProvider(this._getWCProvider()))
   }
 
   id() {
     return 'WalletConnect' as const
   }
 
-  async connect(chainInfo?: ChainInfo | undefined): Promise<ConnectionData> {
+  async connect(targetChainInfo: ChainInfo): Promise<Connection> {
     const wcProvider = this._getWCProvider()
     const provider = this.getProvider()
 
@@ -59,15 +56,17 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     const accounts = wcProvider.accounts
     const chainId = `0x${wcProvider.chainId.toString(16)}`
 
-    const targetChainInfo = chainInfo ?? this.options.chainInfo
     const desiredChainId = targetChainInfo
       ? chainIdFromChainInfo(targetChainInfo)
       : undefined
 
     if (!desiredChainId || chainId === desiredChainId) {
       return {
-        accounts,
-        chainId,
+        data: {
+          accounts,
+          chainId,
+        },
+        provider,
       }
     }
 
@@ -82,19 +81,25 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     }
 
     return {
-      accounts,
-      chainId,
+      data: {
+        accounts,
+        chainId,
+      },
+      provider,
     }
   }
 
-  async reconnect(): Promise<ConnectionData> {
+  async reconnect(): Promise<Connection> {
     const wcProvider = this._getWCProvider()
 
     await wcProvider.enable()
 
     return {
-      accounts: wcProvider.accounts,
-      chainId: `0x${wcProvider.chainId.toString(16)}`,
+      data: {
+        accounts: wcProvider.accounts,
+        chainId: `0x${wcProvider.chainId.toString(16)}`,
+      },
+      provider: this.getProvider(),
     }
   }
 
@@ -112,7 +117,6 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
   on(event: string, callback: (...args: any[]) => void): void {
     const provider = this.getProvider()
 
-    // @ts-expect-error
     provider?.provider.on(event, callback)
   }
 
@@ -126,7 +130,6 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
   off(event: string, callback: (...args: any[]) => void): void {
     const provider = this.getProvider()
 
-    // @ts-expect-error
     provider?.provider.off(event, callback)
   }
 
@@ -140,7 +143,6 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
   once(event: string, callback: (...args: any[]) => void): void {
     const provider = this.getProvider()
 
-    // @ts-expect-error
     provider?.provider.once(event, callback)
   }
 }

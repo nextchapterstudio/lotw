@@ -1,19 +1,61 @@
-import type { Lotw } from '.'
+import type { LotwPocket } from '.'
+import { useSyncExternalStore } from 'react'
 
-import { useActor, useSelector } from '@xstate/react'
+export function createHooksFrom<ConnectorId extends string>(
+  pocket: LotwPocket<ConnectorId>
+) {
+  const useConnect = () =>
+    useSyncExternalStore(pocket.subscribe, () => pocket.connectWith)
 
-export function createHooksFrom<Id extends string>(lotw: Lotw<Id>) {
-  const walletActor = lotw.getWalletActor()
+  const useDisconnect = () =>
+    useSyncExternalStore(pocket.subscribe, () => pocket.disconnect)
+
+  const useSwitchNetwork = () =>
+    useSyncExternalStore(pocket.subscribe, () => pocket.switchNetwork)
+
+  const usePocketState = () =>
+    useSyncExternalStore(
+      pocket.subscribe,
+      () => pocket.status(),
+      (): ReturnType<LotwPocket<ConnectorId>['status']> => 'initializing'
+    )
+
+  const useProvider = () =>
+    useSyncExternalStore(
+      pocket.subscribe,
+      () => pocket.provider(),
+      () => null
+    )
+
+  const useConnectorId = () =>
+    useSyncExternalStore(
+      pocket.subscribe,
+      () => pocket.connectorId(),
+      () => null
+    )
+
+  const useChainId = () =>
+    useSyncExternalStore(
+      pocket.subscribe,
+      () => pocket.chainId(),
+      () => null
+    )
+
+  const useAccounts = () =>
+    useSyncExternalStore(
+      pocket.subscribe,
+      () => pocket.accounts(),
+      () => []
+    )
 
   return {
-    useWalletActor: () => useActor(walletActor),
-    useProvider: () =>
-      useSelector(walletActor, (state) =>
-        state.context.connector?.getProvider()
-      ),
-    useChainId: () =>
-      useSelector(walletActor, (state) => state.context.chainId),
-    useAccounts: () =>
-      useSelector(walletActor, (state) => state.context.accounts),
+    useConnect,
+    useDisconnect,
+    useSwitchNetwork,
+    usePocketState,
+    useProvider,
+    useConnectorId,
+    useChainId,
+    useAccounts,
   }
 }

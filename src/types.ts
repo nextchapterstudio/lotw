@@ -1,8 +1,7 @@
-import type { ExternalProvider } from '@ethersproject/providers'
-import type { Web3Provider } from './helpers'
-import type { Lotw } from './lotw'
+import type { BrowserProvider, Eip1193Provider } from 'ethers'
 
-export type InjectedProvider = ExternalProvider & {
+export type InjectedProvider = Eip1193Provider & {
+  isMetaMask?: boolean
   isCoinbaseWallet?: boolean
   isBraveWallet?: boolean
   isTokenPocket?: boolean
@@ -35,16 +34,18 @@ export type ChainData = {
 
 export type ChainInfo = ChainData | string | number
 
-export type ConnectionData = {
-  accounts: string[]
-  chainId: string
+export type Connection = {
+  data: {
+    accounts: string[]
+    chainId: string
+  }
+  provider: BrowserProvider
 }
 
 export interface LotwConnector<Id extends string> {
   id(): Id
-  getProvider(): Web3Provider
-  connect(chainInfo?: ChainInfo): Promise<ConnectionData>
-  reconnect(): Promise<ConnectionData>
+  connect(chainInfo?: ChainInfo): Promise<Connection>
+  reconnect(): Promise<Connection>
   disconnect(): void
 
   on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
@@ -71,37 +72,3 @@ export interface LotwConnector<Id extends string> {
     callback: (connectInfo: { chainId: string }) => void
   ): void
 }
-
-export type LotwConnectorOptions = {
-  /**
-   * One of:
-   * - Chain id as hex (`'0x1'`)
-   * - Chain id as decimal (`1`)
-   * - ChainData object
-   */
-  chainInfo?: ChainInfo
-}
-
-export type InferConnectorIds<T extends Lotw<any>> = T extends Lotw<infer Id>
-  ? Id
-  : never
-
-export type RegisteredConnectorsMap<Id extends string> = Map<
-  Id,
-  LotwConnector<Id>
->
-
-export type LotwInitializedState =
-  | { status: 'disconnected' }
-  | {
-      status: 'connected'
-      accounts: string[]
-      chain: string
-    }
-
-export type LotwEvent =
-  | { type: 'LOTW_INITIALIZED'; state: LotwInitializedState }
-  | { type: 'LOTW_CONNECTED'; accounts: string[]; chain: string }
-  | { type: 'LOTW_DISCONNECTED' }
-  | { type: 'LOTW_ACCOUNTS_CHANGED'; accounts: string[] }
-  | { type: 'LOTW_CHAIN_CHANGED'; chain: string }
