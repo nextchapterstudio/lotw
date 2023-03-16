@@ -63,9 +63,10 @@ export class LotwPocket<ConnectorId extends string> {
 
   #connectors: Map<ConnectorId, LotwConnector<ConnectorId>>
   #options: LotwPocketOptions
-  #listeners: LotwPocketListener<ConnectorId>[]
 
   #connectionState: LotwPocketState<ConnectorId>
+
+  private _listeners: LotwPocketListener<ConnectorId>[]
 
   constructor(
     connectors: LotwConnector<ConnectorId>[],
@@ -77,7 +78,7 @@ export class LotwPocket<ConnectorId extends string> {
     }, new Map())
 
     this.#options = options ?? {}
-    this.#listeners = []
+    this._listeners = []
     this.#connectionState = { status: 'initializing' }
 
     if (typeof window !== 'undefined') {
@@ -284,10 +285,10 @@ export class LotwPocket<ConnectorId extends string> {
    * Subscribe to connection state changes.
    */
   subscribe(listener: LotwPocketListener<ConnectorId>): () => void {
-    this.#listeners.push(listener)
+    this._listeners.push(listener)
 
     return () => {
-      this.#listeners = this.#listeners.filter((l) => l !== listener)
+      this._listeners = this._listeners.filter((l) => l !== listener)
     }
   }
 
@@ -373,7 +374,7 @@ export class LotwPocket<ConnectorId extends string> {
   #emit(event: LotwEvent<ConnectorId>) {
     console.info('[lotw]', event.status, event)
 
-    for (const listener of this.#listeners) {
+    for (const listener of this._listeners) {
       listener(Object.assign({}, event))
     }
   }
