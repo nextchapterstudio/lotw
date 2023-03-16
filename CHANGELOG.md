@@ -1,5 +1,11 @@
 # lotw
 
+## 4.0.0-next.4
+
+### Patch Changes
+
+- [`18cd7dc`](https://github.com/nextchapterstudio/lotw/commit/18cd7dc4a00e35694478539529eb647fc14cbd48) Thanks [@nobrayner](https://github.com/nobrayner)! - Don't use private class field syntax?
+
 ## 4.0.0-next.3
 
 ### Patch Changes
