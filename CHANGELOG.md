@@ -1,5 +1,11 @@
 # lotw
 
+## 4.0.0-next.5
+
+### Patch Changes
+
+- [`4242164`](https://github.com/nextchapterstudio/lotw/commit/4242164ac813d12bdf8da7f16a3bd37079b5619b) Thanks [@nobrayner](https://github.com/nobrayner)! - It should work now (But probably not WalletConnect2)
+
 ## 4.0.0-next.4
 
 ### Patch Changes
