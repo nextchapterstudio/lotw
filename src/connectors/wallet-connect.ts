@@ -115,9 +115,9 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     callback: (connectInfo: { chainId: string }) => void
   ): void
   on(event: string, callback: (...args: any[]) => void): void {
-    const provider = this.getProvider()
+    const provider = this._getWCProvider()
 
-    provider?.provider.on(event, callback)
+    provider?.on(event, callback)
   }
 
   off(event: 'accountsChanged', callback: (accounts: string[]) => void): void
@@ -128,9 +128,9 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     callback: (connectInfo: { chainId: string }) => void
   ): void
   off(event: string, callback: (...args: any[]) => void): void {
-    const provider = this.getProvider()
+    const provider = this._getWCProvider()
 
-    provider?.provider.off(event, callback)
+    provider?.off(event, callback)
   }
 
   once(event: 'accountsChanged', callback: (accounts: string[]) => void): void
@@ -141,8 +141,8 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     callback: (connectInfo: { chainId: string }) => void
   ): void
   once(event: string, callback: (...args: any[]) => void): void {
-    const provider = this.getProvider()
+    const provider = this._getWCProvider()
 
-    provider?.provider.once(event, callback)
+    provider?.once(event, callback)
   }
 }

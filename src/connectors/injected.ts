@@ -121,7 +121,7 @@ export class BaseInjectedConnector<Id extends string>
     }
   }
 
-  disconnect(): void {}
+  disconnect(): void { }
 
   on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
   on(event: 'chainChanged', callback: (chainId: string) => void): void
@@ -131,9 +131,8 @@ export class BaseInjectedConnector<Id extends string>
     callback: (connectInfo: { chainId: string }) => void
   ): void
   on(event: string, callback: (...args: any[]) => void): void {
-    const provider = this.getProvider()
-
-    provider?.provider.on(event, callback)
+    // @ts-expect-error
+    window.ethereum?.on(event, callback)
   }
 
   off(event: 'accountsChanged', callback: (accounts: string[]) => void): void
@@ -144,9 +143,8 @@ export class BaseInjectedConnector<Id extends string>
     callback: (connectInfo: { chainId: string }) => void
   ): void
   off(event: string, callback: (...args: any[]) => void): void {
-    const provider = this.getProvider()
-
-    provider?.provider.off(event, callback)
+    // @ts-expect-error
+    window.ethereum?.removeListener(event, callback)
   }
 
   once(event: 'accountsChanged', callback: (accounts: string[]) => void): void
@@ -157,9 +155,8 @@ export class BaseInjectedConnector<Id extends string>
     callback: (connectInfo: { chainId: string }) => void
   ): void
   once(event: string, callback: (...args: any[]) => void): void {
-    const provider = this.getProvider()
-
-    provider?.provider.once(event, callback)
+    // @ts-expect-error
+    window.ethereum?.once(event, callback)
   }
 }
 

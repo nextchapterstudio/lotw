@@ -58,15 +58,15 @@ type Switching<ConnectorId extends string> = {
   data: Connection['data']
 }
 
+const EMPTY_ACCOUNTS: string[] = []
+
 export class LotwPocket<ConnectorId extends string> {
   #LOTW_CONNECTOR_KEY = 'lotw::connector'
 
   #connectors: Map<ConnectorId, LotwConnector<ConnectorId>>
   #options: LotwPocketOptions
-
+  #listeners: LotwPocketListener<ConnectorId>[] = []
   #connectionState: LotwPocketState<ConnectorId>
-
-  private _listeners: LotwPocketListener<ConnectorId>[]
 
   constructor(
     connectors: LotwConnector<ConnectorId>[],
@@ -78,7 +78,6 @@ export class LotwPocket<ConnectorId extends string> {
     }, new Map())
 
     this.#options = options ?? {}
-    this._listeners = []
     this.#connectionState = { status: 'initializing' }
 
     if (typeof window !== 'undefined') {
@@ -262,7 +261,7 @@ export class LotwPocket<ConnectorId extends string> {
       return this.#connectionState.data.accounts
     }
 
-    return []
+    return EMPTY_ACCOUNTS
   }
 
   /**
@@ -285,10 +284,10 @@ export class LotwPocket<ConnectorId extends string> {
    * Subscribe to connection state changes.
    */
   subscribe(listener: LotwPocketListener<ConnectorId>): () => void {
-    this._listeners.push(listener)
+    this.#listeners.push(listener)
 
     return () => {
-      this._listeners = this._listeners.filter((l) => l !== listener)
+      this.#listeners = this.#listeners.filter((l) => l !== listener)
     }
   }
 
@@ -296,15 +295,6 @@ export class LotwPocket<ConnectorId extends string> {
     const connectorId = localStorage.getItem(
       this.#LOTW_CONNECTOR_KEY
     ) as ConnectorId | null
-
-    if (!connectorId) {
-      console.error(
-        new LotwError({
-          code: 'CONNECTOR_NOT_REGISTERED',
-          message: `No connector registered with id '${connectorId}'`,
-        })
-      )
-    }
 
     // Cast to ConnectorId so TS is happy
     // We handle the null case because there is no connector associated to null
@@ -361,20 +351,27 @@ export class LotwPocket<ConnectorId extends string> {
         })
       }
     }
+    const disconnected = () => {
+      if (this.#connectionState.status === 'connected') {
+        this.#setConnectionState({ status: 'disconnected' })
+      }
+    }
 
     connector.on('chainChanged', chainChanged)
     connector.on('accountsChanged', accountsChanged)
+    connector.on('disconnect', disconnected)
 
     return () => {
       connector.off('chainChanged', chainChanged)
       connector.off('accountsChanged', accountsChanged)
+      connector.off('disconnect', disconnected)
     }
   }
 
   #emit(event: LotwEvent<ConnectorId>) {
     console.info('[lotw]', event.status, event)
 
-    for (const listener of this._listeners) {
+    for (const listener of this.#listeners) {
       listener(Object.assign({}, event))
     }
   }

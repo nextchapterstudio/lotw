@@ -11,7 +11,9 @@ import type { ChainInfo, Connection, LotwConnector } from '../types'
 
 import { chainIdFromChainInfo } from '../helpers'
 
-export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
+export class WalletConnect2Connector
+  implements LotwConnector<'WalletConnect2'>
+{
   options: EthereumProviderOptions
   ethereumProvider: EthereumProviderType | null = null
   browserProvider: BrowserProvider | null = null
@@ -46,7 +48,7 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
   }
 
   id() {
-    return 'WalletConnect' as const
+    return 'WalletConnect2' as const
   }
 
   async connect(targetChainInfo?: ChainInfo): Promise<Connection> {
@@ -129,10 +131,13 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     event: 'connect',
     callback: (connectInfo: { chainId: string }) => void
   ): void
-  on(event: string, callback: (...args: any[]) => void): void {
-    const provider = this.browserProvider
+  on(
+    event: 'accountsChanged' | 'chainChanged' | 'connect' | 'disconnect',
+    callback: (...args: any[]) => void
+  ): void {
+    const provider = this.ethereumProvider
 
-    provider?.provider.on(event, callback)
+    provider?.on(event, callback)
   }
 
   off(event: 'accountsChanged', callback: (accounts: string[]) => void): void
@@ -142,10 +147,13 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     event: 'connect',
     callback: (connectInfo: { chainId: string }) => void
   ): void
-  off(event: string, callback: (...args: any[]) => void): void {
-    const provider = this.browserProvider
+  off(
+    event: 'accountsChanged' | 'chainChanged' | 'connect' | 'disconnect',
+    callback: (...args: any[]) => void
+  ): void {
+    const provider = this.ethereumProvider
 
-    provider?.provider.off(event, callback)
+    provider?.off(event, callback)
   }
 
   once(event: 'accountsChanged', callback: (accounts: string[]) => void): void
@@ -155,9 +163,12 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     event: 'connect',
     callback: (connectInfo: { chainId: string }) => void
   ): void
-  once(event: string, callback: (...args: any[]) => void): void {
-    const provider = this.browserProvider
+  once(
+    event: 'accountsChanged' | 'chainChanged' | 'connect' | 'disconnect',
+    callback: (...args: any[]) => void
+  ): void {
+    const provider = this.ethereumProvider
 
-    provider?.provider.once(event, callback)
+    provider?.once(event, callback)
   }
 }
