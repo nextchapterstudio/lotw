@@ -5,7 +5,7 @@ import { getAddress as getChecksumAddress } from 'ethers'
 import type { ChainInfo, Connection, LotwConnector } from './types'
 
 import { LotwError } from './lotw-error'
-import { chainIdFromChainInfo } from './helpers'
+import { log } from './logger'
 
 export type InferConnectorIds<T extends LotwPocket<string>> =
   T extends LotwPocket<infer Id> ? Id : never
@@ -116,11 +116,15 @@ export class LotwPocket<ConnectorId extends string> {
       this.#setConnectionState({ status: 'connecting' })
     }
 
+    log('connecting')
+
     try {
       const connection = await connector.connect(chain ?? this.#options.chain)
 
+      log('connected', connection.data)
+
       if (this.#connectionState) {
-        this.disconnect()
+        this.#disconnect()
       }
 
       localStorage.setItem(this.#LOTW_CONNECTOR_KEY, connector.id())
@@ -150,21 +154,16 @@ export class LotwPocket<ConnectorId extends string> {
 
       this.#setConnectionState(previousState)
 
+      log('connection failed')
+
       throw error
     }
   }
 
   disconnect(): void {
-    if (this.#connectionState.status !== 'connected') {
-      return
-    }
+    this.#disconnect()
 
-    localStorage.removeItem(this.#LOTW_CONNECTOR_KEY)
-
-    this.#connectionState.unsubscribe()
-    this.#connectionState.connector.disconnect()
-
-    this.#setConnectionState({ status: 'disconnected' })
+    log('disconnected')
   }
 
   async switchNetwork(chain: ChainInfo): Promise<void> {
@@ -309,6 +308,8 @@ export class LotwPocket<ConnectorId extends string> {
     try {
       const connection = await connector.reconnect()
 
+      log('connected', connection.data)
+
       this.#setConnectionState({
         status: 'connected',
         connector,
@@ -318,19 +319,28 @@ export class LotwPocket<ConnectorId extends string> {
         data: connection.data,
       })
     } catch {
-      this.#setConnectionState({ status: 'disconnected' })
+      this.disconnect()
     }
   }
 
   #subscribe(connector: LotwConnector<ConnectorId>) {
     const chainChanged = async (rawChainId: string) => {
       if (this.#connectionState.status === 'connected') {
+        log('chain changed', rawChainId)
+
+        this.#connectionState.unsubscribe()
+
+        const connection = await this.#connectionState.connector.connect(
+          rawChainId
+        )
+
         this.#setConnectionState({
-          ...this.#connectionState,
-          data: {
-            accounts: this.#connectionState.data.accounts,
-            chainId: chainIdFromChainInfo(rawChainId),
-          },
+          status: 'connected',
+          connector,
+          provider: connection.provider,
+          signer: await connection.provider.getSigner(),
+          unsubscribe: this.#subscribe(connector),
+          data: connection.data,
         })
       }
     }
@@ -341,19 +351,25 @@ export class LotwPocket<ConnectorId extends string> {
       }
 
       if (this.#connectionState.status === 'connected') {
+        const accounts = rawAccounts.map((account) =>
+          getChecksumAddress(account)
+        )
+
+        log('accounts changed', accounts)
+
         this.#setConnectionState({
           ...this.#connectionState,
           signer: await this.#connectionState.provider.getSigner(),
           data: {
             chainId: this.#connectionState.data.chainId,
-            accounts: rawAccounts.map((account) => getChecksumAddress(account)),
+            accounts,
           },
         })
       }
     }
     const disconnected = () => {
       if (this.#connectionState.status === 'connected') {
-        this.#setConnectionState({ status: 'disconnected' })
+        this.disconnect()
       }
     }
 
@@ -368,9 +384,18 @@ export class LotwPocket<ConnectorId extends string> {
     }
   }
 
-  #emit(event: LotwEvent<ConnectorId>) {
-    console.info('[lotw]', event.status, event)
+  #disconnect() {
+    if (this.#connectionState.status === 'connected') {
+      this.#connectionState.unsubscribe()
+      this.#connectionState.connector.disconnect()
+    }
 
+    localStorage.removeItem(this.#LOTW_CONNECTOR_KEY)
+
+    this.#setConnectionState({ status: 'disconnected' })
+  }
+
+  #emit(event: LotwEvent<ConnectorId>) {
     for (const listener of this.#listeners) {
       listener(Object.assign({}, event))
     }

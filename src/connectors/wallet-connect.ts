@@ -12,7 +12,6 @@ type WalletConnectOptions = ConstructorParameters<
 export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
   options: WalletConnectOptions
   wcProvider: WalletConnectProvider | null = null
-  provider: BrowserProvider | null = null
 
   constructor(options: WalletConnectOptions) {
     this.options = options
@@ -26,21 +25,12 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     return (this.wcProvider = new WalletConnectProvider(this.options))
   }
 
-  getProvider(): BrowserProvider {
-    if (this.provider) {
-      return this.provider
-    }
-
-    return (this.provider = new BrowserProvider(this._getWCProvider()))
-  }
-
   id() {
     return 'WalletConnect' as const
   }
 
-  async connect(targetChainInfo: ChainInfo): Promise<Connection> {
+  async connect(targetChainInfo?: ChainInfo): Promise<Connection> {
     const wcProvider = this._getWCProvider()
-    const provider = this.getProvider()
 
     try {
       await wcProvider.enable()
@@ -59,6 +49,8 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
     const desiredChainId = targetChainInfo
       ? chainIdFromChainInfo(targetChainInfo)
       : undefined
+
+    const provider = new BrowserProvider(wcProvider)
 
     if (!desiredChainId || chainId === desiredChainId) {
       return {
@@ -99,7 +91,7 @@ export class WalletConnectConnector implements LotwConnector<'WalletConnect'> {
         accounts: wcProvider.accounts,
         chainId: `0x${wcProvider.chainId.toString(16)}`,
       },
-      provider: this.getProvider(),
+      provider: new BrowserProvider(wcProvider),
     }
   }
 

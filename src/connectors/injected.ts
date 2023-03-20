@@ -13,7 +13,6 @@ import { LotwError } from '../lotw-error'
 export class BaseInjectedConnector<Id extends string>
   implements LotwConnector<Id>
 {
-  provider: BrowserProvider | null = null
   _id: Id
 
   constructor(id: Id) {
@@ -34,26 +33,18 @@ export class BaseInjectedConnector<Id extends string>
     return ethereum
   }
 
-  getProvider(): BrowserProvider {
-    if (this.provider) return this.provider
-
-    let ethereum = this.getEthereumObject()
-
-    return (this.provider = new BrowserProvider(ethereum))
-  }
-
   async connect(targetChainInfo?: ChainInfo): Promise<Connection> {
-    const provider = this.getProvider()
+    const desiredChainId = targetChainInfo
+      ? chainIdFromChainInfo(targetChainInfo)
+      : undefined
+
+    const ethereum = this.getEthereumObject()
 
     try {
       const [accounts, chainId]: [string[], string] = await Promise.all([
-        provider.send('eth_requestAccounts', []),
-        provider.send('eth_chainId', []),
+        ethereum.request({ method: 'eth_requestAccounts' }),
+        ethereum.request({ method: 'eth_chainId' }),
       ])
-
-      const desiredChainId = targetChainInfo
-        ? chainIdFromChainInfo(targetChainInfo)
-        : undefined
 
       if (!desiredChainId || chainId === desiredChainId) {
         return {
@@ -61,20 +52,24 @@ export class BaseInjectedConnector<Id extends string>
             accounts,
             chainId,
           },
-          provider,
+          provider: new BrowserProvider(ethereum),
         }
       }
 
       try {
-        await provider.send('wallet_switchEthereumChain', [
-          { chainId: desiredChainId },
-        ])
+        await ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: desiredChainId }],
+        })
       } catch (error: any) {
         if (
           (error.code === 4902 || error.data?.originalError?.code === 4902) &&
           typeof targetChainInfo === 'object'
         ) {
-          await provider.send('wallet_addEthereumChain', [targetChainInfo])
+          await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [targetChainInfo],
+          })
         }
       }
 
@@ -83,7 +78,7 @@ export class BaseInjectedConnector<Id extends string>
           accounts,
           chainId: desiredChainId,
         },
-        provider,
+        provider: new BrowserProvider(ethereum),
       }
     } catch (err: any) {
       if (
@@ -105,11 +100,11 @@ export class BaseInjectedConnector<Id extends string>
   }
 
   async reconnect(): Promise<Connection> {
-    const provider = this.getProvider()
+    const ethereum = this.getEthereumObject()
 
     const [accounts, chainId] = await Promise.all([
-      provider.send('eth_accounts', []),
-      provider.send('eth_chainId', []),
+      ethereum.request({ method: 'eth_accounts' }),
+      ethereum.request({ method: 'eth_chainId' }),
     ])
 
     return {
@@ -117,11 +112,11 @@ export class BaseInjectedConnector<Id extends string>
         accounts,
         chainId,
       },
-      provider,
+      provider: new BrowserProvider(ethereum),
     }
   }
 
-  disconnect(): void { }
+  disconnect(): void {}
 
   on(event: 'accountsChanged', callback: (accounts: string[]) => void): void
   on(event: 'chainChanged', callback: (chainId: string) => void): void
@@ -131,8 +126,8 @@ export class BaseInjectedConnector<Id extends string>
     callback: (connectInfo: { chainId: string }) => void
   ): void
   on(event: string, callback: (...args: any[]) => void): void {
-    // @ts-expect-error
-    window.ethereum?.on(event, callback)
+    // @ts-ignore
+    this.getEthereumObject().on(event, callback)
   }
 
   off(event: 'accountsChanged', callback: (accounts: string[]) => void): void
@@ -144,7 +139,7 @@ export class BaseInjectedConnector<Id extends string>
   ): void
   off(event: string, callback: (...args: any[]) => void): void {
     // @ts-expect-error
-    window.ethereum?.removeListener(event, callback)
+    this.getEthereumObject().removeListener(event, callback)
   }
 
   once(event: 'accountsChanged', callback: (accounts: string[]) => void): void
@@ -156,7 +151,7 @@ export class BaseInjectedConnector<Id extends string>
   ): void
   once(event: string, callback: (...args: any[]) => void): void {
     // @ts-expect-error
-    window.ethereum?.once(event, callback)
+    this.getEthereumObject().once(event, callback)
   }
 }
 

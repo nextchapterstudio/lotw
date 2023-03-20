@@ -2,7 +2,6 @@ import type {
   EthereumProviderOptions,
   EthereumProvider as EthereumProviderType,
 } from '@walletconnect/ethereum-provider/dist/types/EthereumProvider'
-import type { Eip1193Provider } from 'ethers'
 
 import { BrowserProvider } from 'ethers'
 import { EthereumProvider } from '@walletconnect/ethereum-provider'
@@ -16,35 +15,19 @@ export class WalletConnect2Connector
 {
   options: EthereumProviderOptions
   ethereumProvider: EthereumProviderType | null = null
-  browserProvider: BrowserProvider | null = null
 
   constructor(options: EthereumProviderOptions) {
     this.options = options
   }
 
-  async #getEthereumProvider(): Promise<{
-    ethereumProvider: EthereumProviderType
-    browserProvider: BrowserProvider
-  }> {
+  async #getEthereumProvider(): Promise<EthereumProviderType> {
     if (this.ethereumProvider) {
-      return {
-        ethereumProvider: this.ethereumProvider,
-        browserProvider: this.browserProvider!,
-      }
+      return this.ethereumProvider
     }
 
     const ethereumProvider = await EthereumProvider.init(this.options)
-    const browserProvider = new BrowserProvider(
-      ethereumProvider as Eip1193Provider
-    )
 
-    this.ethereumProvider = ethereumProvider
-    this.browserProvider = browserProvider
-
-    return {
-      ethereumProvider,
-      browserProvider,
-    }
+    return (this.ethereumProvider = ethereumProvider)
   }
 
   id() {
@@ -52,8 +35,7 @@ export class WalletConnect2Connector
   }
 
   async connect(targetChainInfo?: ChainInfo): Promise<Connection> {
-    const { ethereumProvider, browserProvider } =
-      await this.#getEthereumProvider()
+    const ethereumProvider = await this.#getEthereumProvider()
 
     try {
       await ethereumProvider.enable()
@@ -78,7 +60,7 @@ export class WalletConnect2Connector
           accounts,
           chainId,
         },
-        provider: browserProvider,
+        provider: new BrowserProvider(ethereumProvider),
       }
     }
 
@@ -101,13 +83,12 @@ export class WalletConnect2Connector
         accounts,
         chainId,
       },
-      provider: browserProvider,
+      provider: new BrowserProvider(ethereumProvider),
     }
   }
 
   async reconnect(): Promise<Connection> {
-    const { ethereumProvider, browserProvider } =
-      await this.#getEthereumProvider()
+    const ethereumProvider = await this.#getEthereumProvider()
 
     await ethereumProvider.enable()
 
@@ -116,7 +97,7 @@ export class WalletConnect2Connector
         accounts: ethereumProvider.accounts,
         chainId: `0x${ethereumProvider.chainId.toString(16)}`,
       },
-      provider: browserProvider,
+      provider: new BrowserProvider(ethereumProvider),
     }
   }
 
