@@ -1,5 +1,11 @@
 # lotw
 
+## 4.0.0-next.6
+
+### Patch Changes
+
+- [`225308b`](https://github.com/nextchapterstudio/lotw/commit/225308bbc3d57491aa5c0beeb263bebca111e12f) Thanks [@nobrayner](https://github.com/nobrayner)! - Creates a new provider when chain changes
+
 ## 4.0.0-next.5
 
 ### Patch Changes

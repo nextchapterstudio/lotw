@@ -5,6 +5,7 @@
     "lotw": "3.0.2"
   },
   "changesets": [
+    "chilly-berries-shop",
     "itchy-birds-promise",
     "long-ties-tap",
     "proud-hairs-kneel",
