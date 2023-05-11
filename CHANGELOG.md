@@ -1,5 +1,11 @@
 # lotw
 
+## 4.0.0-next.8
+
+### Patch Changes
+
+- Reduced data available in emitted events
+
 ## 4.0.0-next.7
 
 ### Patch Changes

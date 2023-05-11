@@ -24,8 +24,12 @@ export type LotwEvent<ConnectorId extends string> =
   | Initiailizing
   | Disconnected
   | Connecting
-  | Omit<Connected<ConnectorId>, 'connector'>
-  | Omit<Switching<ConnectorId>, 'connector'>
+  | (Pick<Connected<ConnectorId>, 'status' | 'data' | 'provider' | 'signer'> & {
+      connectorId: ConnectorId
+    })
+  | (Pick<Switching<ConnectorId>, 'status' | 'data' | 'provider' | 'signer'> & {
+      connectorId: ConnectorId
+    })
 
 export type LotwPocketListener<ConnectorId extends string> = (
   event: LotwEvent<ConnectorId>
@@ -391,12 +395,6 @@ export class LotwPocket<ConnectorId extends string> {
     this.#setConnectionState({ status: 'disconnected' })
   }
 
-  #emit(event: LotwEvent<ConnectorId>) {
-    for (const listener of this.#listeners) {
-      listener(Object.assign({}, event))
-    }
-  }
-
   #setConnectionState(newState: LotwPocketState<ConnectorId>) {
     if ('data' in newState) {
       newState.data.accounts = newState.data.accounts.map((address) =>
@@ -406,5 +404,31 @@ export class LotwPocket<ConnectorId extends string> {
 
     this.#connectionState = newState
     this.#emit(newState)
+  }
+
+  #emit(state: LotwPocketState<ConnectorId>) {
+    const event = this.#eventFromState(state)
+
+    for (const listener of this.#listeners) {
+      listener(Object.assign({}, event))
+    }
+  }
+
+  #eventFromState(state: LotwPocketState<ConnectorId>): LotwEvent<ConnectorId> {
+    if (
+      state.status === 'initializing' ||
+      state.status === 'connecting' ||
+      state.status === 'disconnected'
+    ) {
+      return state
+    } else {
+      return {
+        status: state.status,
+        data: state.data,
+        provider: state.provider,
+        signer: state.signer,
+        connectorId: state.connector.id(),
+      }
+    }
   }
 }
