@@ -1,5 +1,11 @@
 # lotw
 
+## 4.0.0-next.7
+
+### Patch Changes
+
+- Fixes an issue with the accounts not being checksummed correctly
+
 ## 4.0.0-next.6
 
 ### Patch Changes

@@ -344,17 +344,13 @@ export class LotwPocket<ConnectorId extends string> {
         })
       }
     }
-    const accountsChanged = async (rawAccounts: string[]) => {
-      if (rawAccounts.length === 0) {
+    const accountsChanged = async (accounts: string[]) => {
+      if (accounts.length === 0) {
         this.disconnect()
         return
       }
 
       if (this.#connectionState.status === 'connected') {
-        const accounts = rawAccounts.map((account) =>
-          getChecksumAddress(account)
-        )
-
         log('accounts changed', accounts)
 
         this.#setConnectionState({
@@ -402,6 +398,12 @@ export class LotwPocket<ConnectorId extends string> {
   }
 
   #setConnectionState(newState: LotwPocketState<ConnectorId>) {
+    if ('data' in newState) {
+      newState.data.accounts = newState.data.accounts.map((address) =>
+        getChecksumAddress(address)
+      )
+    }
+
     this.#connectionState = newState
     this.#emit(newState)
   }

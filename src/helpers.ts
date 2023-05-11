@@ -1,6 +1,6 @@
 import type { ChainInfo } from './types'
 
-function assertNever(value: never, message?: string) {
+function assertNever(value: never, message?: string): never {
   throw new Error(message ?? `Unexpect value when never was expected: ${value}`)
 }
 
@@ -18,6 +18,4 @@ export function chainIdFromChainInfo(chainInfo: ChainInfo): string {
         `Unexpected type of chainInfo: ${typeof chainInfo} (${chainInfo})`
       )
   }
-
-  return ''
 }
